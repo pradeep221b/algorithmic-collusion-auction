@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif; color: #1c1a17; }
+    a { color: #b45309; } a:hover { color: #92400e; }
+    .mono { font-family: 'IBM Plex Mono', 'Consolas', monospace; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #f7f5f0; padding: 48px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #1c1a17; padding-bottom: 14px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div class="mono" style="font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b6660;">Project workflow</div>
+      <div style="font-size: 30px; font-weight: 600; letter-spacing: -0.01em;">Algorithmic collusion in a uniform-price auction</div>
+    </div>
+    <div class="mono" style="font-size: 12px; color: #6b6660;">3 firms · 60 MW · c = €10 · D = 100 MW · cap €100 · 15 prices</div>
+  </div>
+
+  <div style="display: flex; align-items: stretch; gap: 0; flex: 1;">
+
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; background: #ffffff; border: 1px solid #d9d4cb; padding: 20px; box-sizing: border-box;">
+      <div class="mono" style="font-size: 11px; letter-spacing: 0.1em; color: #b45309;">M1</div>
+      <div style="font-size: 18px; font-weight: 600;">Market model</div>
+      <div style="font-size: 13px; line-height: 1.5; color: #3d3935;">Uniform-price auction, single node. One bid per firm per round.</div>
+      <div class="mono" style="font-size: 12px; line-height: 1.6; color: #1c1a17; background: #f2efe8; padding: 10px; border: 1px solid #e5e0d6;">sort bids ↑<br>dispatch until D<br>price = last unit<br>ties → pro rata<br>π = (p − c)·q</div>
+      <div style="margin-top: auto; font-size: 12px; line-height: 1.5; color: #6b6660; border-top: 1px dashed #d9d4cb; padding-top: 10px;"><span style="font-weight: 600; color: #1c1a17;">Gate:</span> unit tests pass, pro-rata sums to D exactly.</div>
+      <div style="font-size: 12px; color: #6b6660;" class="mono">market.py</div>
+    </div>
+
+    <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1c1a17" stroke-width="1.5"><path d="M4 12h16M14 6l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; background: #ffffff; border: 1px solid #d9d4cb; padding: 20px; box-sizing: border-box;">
+      <div class="mono" style="font-size: 11px; letter-spacing: 0.1em; color: #b45309;">M1</div>
+      <div style="font-size: 18px; font-weight: 600;">Benchmarks</div>
+      <div style="font-size: 13px; line-height: 1.5; color: #3d3935;">Computed analytically before any learning code exists.</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; padding: 8px 10px; background: #f2efe8; border: 1px solid #e5e0d6;"><span style="font-size: 13px;">Competitive</span><span class="mono" style="font-size: 13px;">€10</span></div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 10px; background: #f2efe8; border: 1px solid #e5e0d6;"><span style="font-size: 13px;">Collusive</span><span class="mono" style="font-size: 13px;">€100</span></div>
+      </div>
+      <div class="mono" style="font-size: 12px; line-height: 1.6; padding: 10px; border: 1px solid #b45309; color: #1c1a17;">Δ = (p̄ − 10) / (100 − 10)<br><span style="color: #6b6660;">0 = competition, 1 = cartel</span></div>
+      <div style="margin-top: auto; font-size: 12px; line-height: 1.5; color: #6b6660; border-top: 1px dashed #d9d4cb; padding-top: 10px;"><span style="font-weight: 600; color: #1c1a17;">Rule:</span> Δ always reported with CI across 20+ seeds.</div>
+    </div>
+
+    <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1c1a17" stroke-width="1.5"><path d="M4 12h16M14 6l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; background: #ffffff; border: 1px solid #d9d4cb; padding: 20px; box-sizing: border-box;">
+      <div class="mono" style="font-size: 11px; letter-spacing: 0.1em; color: #b45309;">M2</div>
+      <div style="font-size: 18px; font-weight: 600;">Q-learning loop</div>
+      <div style="font-size: 13px; line-height: 1.5; color: #3d3935;">Three independent tabular learners. No shared parameters, no messages.</div>
+      <div class="mono" style="font-size: 12px; line-height: 1.6; color: #1c1a17; background: #f2efe8; padding: 10px; border: 1px solid #e5e0d6;">state = last profile (15³)<br>action = price index (15)<br>reward = own profit<br>α 0.15 · γ 0.95 · ε = e^(−βt)<br>10⁶ rounds × 20+ seeds</div>
+      <div style="margin-top: auto; font-size: 12px; line-height: 1.5; color: #6b6660; border-top: 1px dashed #d9d4cb; padding-top: 10px;"><span style="font-weight: 600; color: #1c1a17;">Gate:</span> a meaningful share of seeds reach Δ &gt; 0.5.</div>
+      <div style="font-size: 12px; color: #6b6660;" class="mono">agents.py · experiments.py</div>
+    </div>
+
+    <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1c1a17" stroke-width="1.5"><path d="M4 12h16M14 6l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="flex: 1.35; display: flex; flex-direction: column; gap: 10px; background: #1c1a17; color: #f7f5f0; padding: 20px; box-sizing: border-box;">
+      <div class="mono" style="font-size: 11px; letter-spacing: 0.1em; color: #f5b04c;">M3 · M4 · M5</div>
+      <div style="font-size: 18px; font-weight: 600;">Three indicators</div>
+      <div style="font-size: 13px; line-height: 1.5; color: #c9c3b8;">High prices prove nothing. These do.</div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+        <div style="display: flex; gap: 12px; padding: 10px; border: 1px solid #3d3935;">
+          <div class="mono" style="font-size: 12px; color: #f5b04c; width: 24px;">M3</div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 13px; font-weight: 600;">Punishment</div>
+            <div style="font-size: 12px; line-height: 1.45; color: #c9c3b8;">Freeze learning, force one undercut, watch 20 rounds. Expect punish-then-forgive.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; padding: 10px; border: 1px solid #3d3935;">
+          <div class="mono" style="font-size: 12px; color: #f5b04c; width: 24px;">M4</div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 13px; font-weight: 600;">Shortsightedness ablation</div>
+            <div style="font-size: 12px; line-height: 1.45; color: #c9c3b8;">Rerun with γ = 0 and with no memory. Expect Δ to collapse in both.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; padding: 10px; border: 1px solid #3d3935;">
+          <div class="mono" style="font-size: 12px; color: #f5b04c; width: 24px;">M5</div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 13px; font-weight: 600;">Unclaimed temptation</div>
+            <div style="font-size: 12px; line-height: 1.45; color: #c9c3b8;">Best one-shot deviation is profitable yet unplayed. Money left on the table.</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: auto; font-size: 12px; line-height: 1.5; color: #c9c3b8; border-top: 1px dashed #3d3935; padding-top: 10px;"><span style="font-weight: 600; color: #f7f5f0;">Any fails →</span> it was never collusion. Report that.</div>
+      <div style="font-size: 12px; color: #8a847a;" class="mono">indicators.py</div>
+    </div>
+
+    <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1c1a17" stroke-width="1.5"><path d="M4 12h16M14 6l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="flex: 0.9; display: flex; flex-direction: column; gap: 12px; background: #ffffff; border: 1px solid #d9d4cb; padding: 20px; box-sizing: border-box;">
+      <div class="mono" style="font-size: 11px; letter-spacing: 0.1em; color: #b45309;">Output</div>
+      <div style="font-size: 18px; font-weight: 600;">Deliverables</div>
+      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.5;">
+        <div style="display: flex; justify-content: space-between; gap: 8px;"><span>Price trajectory</span><span class="mono" style="color: #6b6660; font-size: 12px;">fig</span></div>
+        <div style="display: flex; justify-content: space-between; gap: 8px;"><span>Punishment plot</span><span class="mono" style="color: #6b6660; font-size: 12px;">fig</span></div>
+        <div style="display: flex; justify-content: space-between; gap: 8px;"><span>Ablation bars</span><span class="mono" style="color: #6b6660; font-size: 12px;">fig</span></div>
+        <div style="display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid #e5e0d6; padding-top: 6px;"><span>Δ with CI</span><span class="mono" style="color: #6b6660; font-size: 12px;">RESULTS.md</span></div>
+        <div style="display: flex; justify-content: space-between; gap: 8px;"><span>Three verdicts</span><span class="mono" style="color: #6b6660; font-size: 12px;">RESULTS.md</span></div>
+        <div style="display: flex; justify-content: space-between; gap: 8px;"><span>Negative results</span><span class="mono" style="color: #6b6660; font-size: 12px;">RESULTS.md</span></div>
+      </div>
+      <div style="margin-top: auto; font-size: 12px; line-height: 1.5; color: #6b6660; border-top: 1px dashed #d9d4cb; padding-top: 10px;">Writeup states the paper's limits: simulation-only, one network, unreproduced.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 32px; border-top: 1px solid #d9d4cb; padding-top: 14px; font-size: 12px; line-height: 1.5; color: #3d3935;">
+    <div style="display: flex; gap: 8px;"><span class="mono" style="color: #b45309;">01</span><span>Negative results are findings.</span></div>
+    <div style="display: flex; gap: 8px;"><span class="mono" style="color: #b45309;">02</span><span>Never report Δ from one seed.</span></div>
+    <div style="display: flex; gap: 8px;"><span class="mono" style="color: #b45309;">03</span><span>No tuning until collusion appears. If you sweep, report the whole sweep.</span></div>
+    <div style="display: flex; gap: 8px;"><span class="mono" style="color: #b45309;">04</span><span>Congestion and multi-bus network are phase two, not this build.</span></div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

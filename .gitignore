@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+# per-seed Q-tables (regenerate with `python experiments.py`); small JSON summaries are kept
+results/*.npz
+results/**/*.npz
+results/*.log
+# seeded design-canvas page (2 MB editor payload); the artboard source Main.dc.html is kept
+design/collusion-workflow.html
