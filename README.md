@@ -90,7 +90,7 @@ anticipate anything, so if it shows the same "fingerprint" the fingerprint is no
 ```bash
 pip install -r requirements.txt
 pytest                      # 24 tests: clearing rule, Q-update, indicators on hand-built policies
-python experiments.py       # M2 sweep + M4 ablations, 50 seeds x 4 configs, ~4 min (numba)
+python experiments.py       # M2 sweep + M4 ablations, 100 seeds x 6 configs, ~10 min (numba)
 python indicators.py        # M3, M4, M5 verdicts + punishment figure
 ```
 

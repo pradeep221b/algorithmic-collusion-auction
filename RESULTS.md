@@ -3,7 +3,7 @@
 > Follow-up: [PHASE1.md](PHASE1.md) explains the memory-0 puzzle below and adds a Q-table indicator that separates the two learners.
 
 Three independent tabular Q-learners, uniform-price auction, single node, parameters exactly
-as in [SPEC.md](SPEC.md). 50 seeds per configuration, hyperparameters fixed before any
+as in [SPEC.md](SPEC.md). 100 seeds per configuration, hyperparameters fixed before any
 result was seen and never tuned. Everything below is reproducible with
 `python experiments.py && python indicators.py` (about 5 minutes).
 
@@ -26,29 +26,30 @@ on the training trace. CI is mean ± 1.96 × standard error across seeds.
 
 | configuration | rounds | Δ mean | 95% CI | median | seeds with Δ > 0.5 | converged |
 |---|---|---|---|---|---|---|
-| **baseline** γ=0.95, memory 1 (spec) | 1M | 0.394 | 0.360 – 0.428 | 0.343 | 18% | 0% |
-| baseline, longer horizon | 5M | **0.623** | 0.611 – 0.636 | 0.643 | 100% | 100% |
-| γ = 0 (no future) | 1M | 0.386 | 0.357 – 0.414 | 0.393 | 8% | 0% |
-| γ = 0 (no future) | 5M | 0.386 | 0.357 – 0.414 | 0.401 | 8% | 100% |
-| memory 0 (no past) | 1M | 0.946 | 0.928 – 0.963 | 0.964 | 100% | 78% |
-| memory 0 (no past) | 5M | 0.947 | 0.931 – 0.963 | 0.929 | 100% | 100% |
+| **baseline** γ=0.95, memory 1 (spec) | 1M | 0.375 | 0.354 – 0.397 | 0.343 | 12% | 0% |
+| baseline, longer horizon | 5M | **0.621** | 0.612 – 0.630 | 0.625 | 100% | 100% |
+| γ = 0 (no future) | 1M | 0.373 | 0.353 – 0.393 | 0.386 | 5% | 0% |
+| γ = 0 (no future) | 5M | 0.370 | 0.350 – 0.390 | 0.386 | 4% | 100% |
+| memory 0 (no past) | 1M | 0.943 | 0.931 – 0.955 | 0.929 | 100% | 79% |
+| memory 0 (no past) | 5M | 0.943 | 0.931 – 0.954 | 0.929 | 100% | 100% |
 
 "Converged" = no agent's greedy policy changed during the last 100,000 rounds.
 
 **The spec's 1M-round horizon binds.** At 1M rounds no seed has converged and the
 distribution is bimodal: 41 seeds between Δ 0.2 and 0.5, 9 seeds between 0.5 and 0.7. In the
 5M runs the seeds jump one at a time from a mean price near €40 to €60–72, between roughly
-650k and 2.5M rounds, and then never move again; every seed converges (median convergence
-round 1.62M) and all 50 land in a narrow band, Δ 0.55 to 0.72. The spec's acceptance
+1.2M and 2.9M rounds, and then never move again; every seed converges (median convergence
+round 1.63M) and all 100 land in a narrow band, Δ 0.52 to 0.71. The spec's acceptance
 criterion for M2 ("a meaningful fraction of seeds converge to Δ > 0.5") is not met at 1M and
 is met at 5M.
 
 ![price trajectory](figures/price_trajectory.png)
 ![price trajectory, 5M](figures/price_trajectory_long.png)
 
-**What the converged policies actually do.** They do not sit at a constant high price. 46 of
-50 seeds play a short cycle, most often a 2-cycle alternating between a symmetric high
-profile (bids €94 to €100) and a symmetric low profile (bids €36 to €42). Mean price ≈ €66,
+**What the converged policies actually do.** They do not sit at a constant high price. 86 of
+100 seeds play a cycle of length four or less, 35 of them a 2-cycle alternating between a
+symmetric high profile (bids €94 to €100) and a symmetric low profile (bids €36 to €42);
+the rest run 5- to 7-cycles. Mean price ≈ €66,
 hence Δ ≈ 0.62. A typical converged seed:
 
 ```
@@ -69,27 +70,27 @@ within half a rung in rounds 13–24; *punish, no recovery* = lower and still lo
 
 | configuration | seeds tested | punish-forgive | punish, no recovery | no reaction |
 |---|---|---|---|---|
-| baseline 1M, collusive seeds only (Δ > 0.5) | 9 | 33% | 56% | 11% |
-| baseline 5M, all seeds (all collusive) | 50 | **24%** | **64%** | 12% |
-| γ = 0, collusive seeds | 4 | 0–25% | 25% | 50–75% |
-| memory 0, all seeds (control) | 50 | 0% | 0% | **100%** |
+| baseline 1M, collusive seeds only (Δ > 0.5) | 12 | 33% | 50% | 17% |
+| baseline 5M, all seeds (all collusive) | 100 | **21%** | **70%** | 9% |
+| γ = 0, collusive seeds (1M / 5M) | 5 / 4 | 0–25% | 20–25% | 50–80% |
+| memory 0, all seeds (control) | 100 | 0% | 0% | **100%** |
 
 ![punishment](figures/punishment_long.png)
 
 **Reading.** A deviation is answered. In the converged 5M runs the rivals' bids over the
-next twelve rounds average €16 below what they would otherwise have been, and the clearing
-price falls from €66 to €46. What happens next splits the seeds: in 24% the rivals are back
-at their old bids by rounds 13–24 (price €62 against a counterfactual €65), which is the
-punish-then-forgive pattern; in 64% they are still bidding €19 lower (price €46 against
-€67), a grim trigger or simply no learned route back to the cycle; in 12% the rivals never
-moved. Letting agent 1 or agent 2 be the deviator gives the same split (22% and 20%
-forgive), but the verdict for a *given* seed changes with the deviator in 32 of 50 seeds,
+next twelve rounds average €17 below what they would otherwise have been, and the clearing
+price falls from €66 to €45. What happens next splits the seeds: in 21% the rivals are back
+at their old bids by rounds 13–24 (price €63 against a counterfactual €65), which is the
+punish-then-forgive pattern; in 70% they are still bidding €19 lower (price €44 against
+€66), a grim trigger or simply no learned route back to the cycle; in 9% the rivals never
+moved. Letting agent 1 or agent 2 be the deviator gives the same split (20% and 17%
+forgive), but the verdict for a *given* seed changes with the deviator in 61 of 100 seeds,
 so the response is not one shared strategy.
 
 The memory-0 control behaves exactly as it must: with no state there is nothing to react to,
 and 100% of seeds show no reaction. The test therefore does discriminate, and the memory-1
-learners pass its weaker form (rivals react) in 88% of seeds and its full form (react, then
-forgive) in a quarter.
+learners pass its weaker form (rivals react) in 91% of seeds and its full form (react, then
+forgive) in a fifth.
 
 The one-round deviation itself is *profitable* in this market: the deviator sells 60 MW at
 the rivals' price instead of a one-third share (see M5), and the clearing price does not move
@@ -102,8 +103,8 @@ full learner's Δ.
 
 | horizon | full learner | γ = 0 | memory 0 | verdict |
 |---|---|---|---|---|
-| 1M | 0.394 | 0.386 (not collapsed) | 0.946 (not collapsed) | **fail** |
-| 5M | 0.623 | 0.386 (not collapsed) | 0.947 (not collapsed) | **fail** |
+| 1M | 0.375 | 0.373 (not collapsed) | 0.943 (not collapsed) | **fail** |
+| 5M | 0.621 | 0.370 (not collapsed) | 0.943 (not collapsed) | **fail** |
 
 ![ablation](figures/ablation_bars.png)
 
@@ -135,10 +136,10 @@ realised profit, rivals held fixed.
 
 | configuration | seeds with a profitable, unplayed deviation | mean best gap, €/round |
 |---|---|---|
-| baseline 1M, collusive seeds | 100% | 2,443 |
-| baseline 5M | 100% | 2,199 |
-| γ = 0 | 96% | 1,221 |
-| memory 0 (control) | **100%** | 1,453 |
+| baseline 1M, collusive seeds | 100% | 2,475 |
+| baseline 5M | 100% | 2,226 |
+| γ = 0 (1M / 5M) | 95% | 1,209 / 1,221 |
+| memory 0 (control) | **100%** | 1,444 / 1,448 |
 
 **Reading.** On the high round of the cycle every agent earns €3,000 (one third of 100 MW at
 €100 margin €90) and could earn €5,400 by shaving one rung off its bid: the price would not
@@ -152,9 +153,9 @@ produced by frozen learning just as readily as by strategy, so it is not evidenc
 
 | | test | spec's acceptance | outcome |
 |---|---|---|---|
-| M2 | Δ > 0.5 in a meaningful fraction of seeds | 1M: 18%, none converged · 5M: 100%, all converged | met only at 5M |
-| M3 | punish, then forgive | rivals react in 88% of converged seeds; forgive within 24 rounds in 24% | partial: punished, rarely forgiven |
-| M4 | Δ collapses under γ = 0 and memory 0 | 0.39 and 0.95 versus 0.62 | **fail** |
+| M2 | Δ > 0.5 in a meaningful fraction of seeds | 1M: 12%, none converged · 5M: 100%, all converged | met only at 5M |
+| M3 | punish, then forgive | rivals react in 91% of converged seeds; forgive within 24 rounds in 21% | partial: punished, rarely forgiven |
+| M4 | Δ collapses under γ = 0 and memory 0 | 0.37 and 0.94 versus 0.62 | **fail** |
 | M5 | profitable deviation exists and is unplayed | 100%, but also 100% in the memory-0 control | present, not discriminating |
 
 **Conclusion.** Independent Q-learners in this uniform-price auction do reach and sustain

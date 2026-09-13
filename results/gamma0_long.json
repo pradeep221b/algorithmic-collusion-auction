@@ -5,18 +5,18 @@
   "n_rounds": 5000000
  },
  "summary": {
-  "n": 50,
-  "mean": 0.3857777777777778,
+  "n": 100,
+  "mean": 0.3703111111111111,
   "ci95": [
-   0.357149261906576,
-   0.4144062936489796
+   0.3503010994971559,
+   0.3903211227250663
   ],
-  "median": 0.4007142857142857,
+  "median": 0.38571428571428573,
   "min": 0.07142857142857154,
   "max": 0.619047619047619,
-  "frac_above_0_5": 0.08,
+  "frac_above_0_5": 0.04,
   "frac_converged": 1.0,
-  "seconds": 55.7
+  "seconds": 116.5
  },
  "seeds": [
   {
@@ -617,6 +617,606 @@
     5,
     0,
     5
+   ]
+  },
+  {
+   "seed": 50,
+   "delta": 0.17142857142857146,
+   "mean_price": 25.42857142857143,
+   "t_conv": 1243908,
+   "converged": true,
+   "last_profile": [
+    3,
+    3,
+    0
+   ]
+  },
+  {
+   "seed": 51,
+   "delta": 0.4197619047619048,
+   "mean_price": 47.77857142857143,
+   "t_conv": 1261492,
+   "converged": true,
+   "last_profile": [
+    11,
+    3,
+    11
+   ]
+  },
+  {
+   "seed": 52,
+   "delta": 0.3412698412698412,
+   "mean_price": 40.71428571428571,
+   "t_conv": 1346319,
+   "converged": true,
+   "last_profile": [
+    6,
+    6,
+    1
+   ]
+  },
+  {
+   "seed": 53,
+   "delta": 0.3333333333333335,
+   "mean_price": 40.000000000000014,
+   "t_conv": 1287354,
+   "converged": true,
+   "last_profile": [
+    1,
+    0,
+    1
+   ]
+  },
+  {
+   "seed": 54,
+   "delta": 0.3785714285714286,
+   "mean_price": 44.07142857142858,
+   "t_conv": 1162666,
+   "converged": true,
+   "last_profile": [
+    0,
+    5,
+    5
+   ]
+  },
+  {
+   "seed": 55,
+   "delta": 0.31277777777777777,
+   "mean_price": 38.15,
+   "t_conv": 1228035,
+   "converged": true,
+   "last_profile": [
+    3,
+    3,
+    0
+   ]
+  },
+  {
+   "seed": 56,
+   "delta": 0.41539682539682554,
+   "mean_price": 47.3857142857143,
+   "t_conv": 1193654,
+   "converged": true,
+   "last_profile": [
+    0,
+    9,
+    9
+   ]
+  },
+  {
+   "seed": 57,
+   "delta": 0.4384920634920635,
+   "mean_price": 49.464285714285715,
+   "t_conv": 1232099,
+   "converged": true,
+   "last_profile": [
+    4,
+    4,
+    0
+   ]
+  },
+  {
+   "seed": 58,
+   "delta": 0.3333333333333333,
+   "mean_price": 40.0,
+   "t_conv": 1243873,
+   "converged": true,
+   "last_profile": [
+    7,
+    1,
+    7
+   ]
+  },
+  {
+   "seed": 59,
+   "delta": 0.3573809523809524,
+   "mean_price": 42.16428571428572,
+   "t_conv": 1159761,
+   "converged": true,
+   "last_profile": [
+    9,
+    0,
+    9
+   ]
+  },
+  {
+   "seed": 60,
+   "delta": 0.2380952380952382,
+   "mean_price": 31.428571428571438,
+   "t_conv": 1145821,
+   "converged": true,
+   "last_profile": [
+    0,
+    5,
+    5
+   ]
+  },
+  {
+   "seed": 61,
+   "delta": 0.40214285714285714,
+   "mean_price": 46.19285714285714,
+   "t_conv": 1197360,
+   "converged": true,
+   "last_profile": [
+    13,
+    0,
+    13
+   ]
+  },
+  {
+   "seed": 62,
+   "delta": 0.43817460317460316,
+   "mean_price": 49.43571428571428,
+   "t_conv": 1341231,
+   "converged": true,
+   "last_profile": [
+    9,
+    2,
+    9
+   ]
+  },
+  {
+   "seed": 63,
+   "delta": 0.4181746031746032,
+   "mean_price": 47.635714285714286,
+   "t_conv": 1290232,
+   "converged": true,
+   "last_profile": [
+    0,
+    3,
+    3
+   ]
+  },
+  {
+   "seed": 64,
+   "delta": 0.4547619047619048,
+   "mean_price": 50.92857142857143,
+   "t_conv": 1274403,
+   "converged": true,
+   "last_profile": [
+    8,
+    8,
+    1
+   ]
+  },
+  {
+   "seed": 65,
+   "delta": 0.40476190476190477,
+   "mean_price": 46.42857142857143,
+   "t_conv": 1303827,
+   "converged": true,
+   "last_profile": [
+    0,
+    2,
+    2
+   ]
+  },
+  {
+   "seed": 66,
+   "delta": 0.4696031746031745,
+   "mean_price": 52.264285714285705,
+   "t_conv": 1259024,
+   "converged": true,
+   "last_profile": [
+    4,
+    4,
+    0
+   ]
+  },
+  {
+   "seed": 67,
+   "delta": 0.2698412698412699,
+   "mean_price": 34.28571428571429,
+   "t_conv": 1337504,
+   "converged": true,
+   "last_profile": [
+    1,
+    5,
+    5
+   ]
+  },
+  {
+   "seed": 68,
+   "delta": 0.450873015873016,
+   "mean_price": 50.578571428571436,
+   "t_conv": 1322262,
+   "converged": true,
+   "last_profile": [
+    1,
+    5,
+    5
+   ]
+  },
+  {
+   "seed": 69,
+   "delta": 0.38571428571428573,
+   "mean_price": 44.714285714285715,
+   "t_conv": 1374715,
+   "converged": true,
+   "last_profile": [
+    0,
+    3,
+    3
+   ]
+  },
+  {
+   "seed": 70,
+   "delta": 0.49007936507936495,
+   "mean_price": 54.10714285714285,
+   "t_conv": 1228785,
+   "converged": true,
+   "last_profile": [
+    1,
+    11,
+    11
+   ]
+  },
+  {
+   "seed": 71,
+   "delta": 0.41079365079365077,
+   "mean_price": 46.97142857142857,
+   "t_conv": 1319769,
+   "converged": true,
+   "last_profile": [
+    11,
+    1,
+    11
+   ]
+  },
+  {
+   "seed": 72,
+   "delta": 0.07142857142857154,
+   "mean_price": 16.428571428571438,
+   "t_conv": 1179043,
+   "converged": true,
+   "last_profile": [
+    0,
+    1,
+    1
+   ]
+  },
+  {
+   "seed": 73,
+   "delta": 0.41087301587301595,
+   "mean_price": 46.978571428571435,
+   "t_conv": 1165011,
+   "converged": true,
+   "last_profile": [
+    9,
+    9,
+    0
+   ]
+  },
+  {
+   "seed": 74,
+   "delta": 0.3392857142857143,
+   "mean_price": 40.535714285714285,
+   "t_conv": 1294464,
+   "converged": true,
+   "last_profile": [
+    0,
+    2,
+    2
+   ]
+  },
+  {
+   "seed": 75,
+   "delta": 0.35746031746031753,
+   "mean_price": 42.17142857142858,
+   "t_conv": 1413319,
+   "converged": true,
+   "last_profile": [
+    6,
+    0,
+    6
+   ]
+  },
+  {
+   "seed": 76,
+   "delta": 0.07142857142857154,
+   "mean_price": 16.428571428571438,
+   "t_conv": 1213376,
+   "converged": true,
+   "last_profile": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "seed": 77,
+   "delta": 0.36428571428571427,
+   "mean_price": 42.785714285714285,
+   "t_conv": 1183660,
+   "converged": true,
+   "last_profile": [
+    6,
+    0,
+    6
+   ]
+  },
+  {
+   "seed": 78,
+   "delta": 0.42857142857142855,
+   "mean_price": 48.57142857142857,
+   "t_conv": 1286153,
+   "converged": true,
+   "last_profile": [
+    0,
+    1,
+    1
+   ]
+  },
+  {
+   "seed": 79,
+   "delta": 0.2321428571428572,
+   "mean_price": 30.89285714285715,
+   "t_conv": 1286530,
+   "converged": true,
+   "last_profile": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "seed": 80,
+   "delta": 0.3412698412698413,
+   "mean_price": 40.714285714285715,
+   "t_conv": 1274354,
+   "converged": true,
+   "last_profile": [
+    8,
+    0,
+    8
+   ]
+  },
+  {
+   "seed": 81,
+   "delta": 0.4203968253968254,
+   "mean_price": 47.83571428571428,
+   "t_conv": 1314630,
+   "converged": true,
+   "last_profile": [
+    0,
+    4,
+    4
+   ]
+  },
+  {
+   "seed": 82,
+   "delta": 0.45142857142857146,
+   "mean_price": 50.62857142857143,
+   "t_conv": 1241556,
+   "converged": true,
+   "last_profile": [
+    3,
+    0,
+    3
+   ]
+  },
+  {
+   "seed": 83,
+   "delta": 0.4392857142857143,
+   "mean_price": 49.535714285714285,
+   "t_conv": 1297370,
+   "converged": true,
+   "last_profile": [
+    3,
+    0,
+    3
+   ]
+  },
+  {
+   "seed": 84,
+   "delta": 0.4523809523809524,
+   "mean_price": 50.714285714285715,
+   "t_conv": 1186981,
+   "converged": true,
+   "last_profile": [
+    4,
+    2,
+    4
+   ]
+  },
+  {
+   "seed": 85,
+   "delta": 0.4404761904761904,
+   "mean_price": 49.64285714285714,
+   "t_conv": 1396746,
+   "converged": true,
+   "last_profile": [
+    9,
+    9,
+    1
+   ]
+  },
+  {
+   "seed": 86,
+   "delta": 0.3571428571428571,
+   "mean_price": 42.14285714285714,
+   "t_conv": 1269113,
+   "converged": true,
+   "last_profile": [
+    5,
+    1,
+    5
+   ]
+  },
+  {
+   "seed": 87,
+   "delta": 0.3333333333333333,
+   "mean_price": 40.0,
+   "t_conv": 1161882,
+   "converged": true,
+   "last_profile": [
+    1,
+    3,
+    3
+   ]
+  },
+  {
+   "seed": 88,
+   "delta": 0.30952380952380965,
+   "mean_price": 37.85714285714287,
+   "t_conv": 1321799,
+   "converged": true,
+   "last_profile": [
+    0,
+    4,
+    4
+   ]
+  },
+  {
+   "seed": 89,
+   "delta": 0.38571428571428573,
+   "mean_price": 44.714285714285715,
+   "t_conv": 1211125,
+   "converged": true,
+   "last_profile": [
+    0,
+    5,
+    5
+   ]
+  },
+  {
+   "seed": 90,
+   "delta": 0.3412698412698413,
+   "mean_price": 40.714285714285715,
+   "t_conv": 1196757,
+   "converged": true,
+   "last_profile": [
+    4,
+    0,
+    4
+   ]
+  },
+  {
+   "seed": 91,
+   "delta": 0.29460317460317464,
+   "mean_price": 36.51428571428572,
+   "t_conv": 1244461,
+   "converged": true,
+   "last_profile": [
+    5,
+    5,
+    0
+   ]
+  },
+  {
+   "seed": 92,
+   "delta": 0.3285714285714287,
+   "mean_price": 39.571428571428584,
+   "t_conv": 1256246,
+   "converged": true,
+   "last_profile": [
+    4,
+    1,
+    4
+   ]
+  },
+  {
+   "seed": 93,
+   "delta": 0.07142857142857154,
+   "mean_price": 16.428571428571438,
+   "t_conv": 1214228,
+   "converged": true,
+   "last_profile": [
+    0,
+    1,
+    1
+   ]
+  },
+  {
+   "seed": 94,
+   "delta": 0.36126984126984135,
+   "mean_price": 42.51428571428572,
+   "t_conv": 1211360,
+   "converged": true,
+   "last_profile": [
+    10,
+    1,
+    10
+   ]
+  },
+  {
+   "seed": 95,
+   "delta": 0.2857142857142857,
+   "mean_price": 35.714285714285715,
+   "t_conv": 1330825,
+   "converged": true,
+   "last_profile": [
+    3,
+    0,
+    3
+   ]
+  },
+  {
+   "seed": 96,
+   "delta": 0.3253968253968255,
+   "mean_price": 39.2857142857143,
+   "t_conv": 1334119,
+   "converged": true,
+   "last_profile": [
+    0,
+    3,
+    3
+   ]
+  },
+  {
+   "seed": 97,
+   "delta": 0.4792857142857144,
+   "mean_price": 53.1357142857143,
+   "t_conv": 1215746,
+   "converged": true,
+   "last_profile": [
+    10,
+    10,
+    0
+   ]
+  },
+  {
+   "seed": 98,
+   "delta": 0.42777777777777776,
+   "mean_price": 48.5,
+   "t_conv": 1267742,
+   "converged": true,
+   "last_profile": [
+    5,
+    5,
+    1
+   ]
+  },
+  {
+   "seed": 99,
+   "delta": 0.2857142857142856,
+   "mean_price": 35.7142857142857,
+   "t_conv": 1255713,
+   "converged": true,
+   "last_profile": [
+    0,
+    6,
+    6
    ]
   }
  ]

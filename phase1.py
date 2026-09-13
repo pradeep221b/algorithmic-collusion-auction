@@ -29,7 +29,7 @@ import market as m
 import experiments as ex
 
 BETAS = (1e-6, 3e-6, 1e-5, 3e-5, 1e-4)
-SEEDS = 50
+SEEDS = 100
 
 
 def sweep():
@@ -87,7 +87,7 @@ def payasbid():
     (ex.RESULTS / "phase1_payasbid.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
 
 
-def occupation(n_rounds=3_000_000, seeds=20, memory=0, epss=(0.001, 0.003, 0.01, 0.03, 0.1), tag=None):
+def occupation(n_rounds=3_000_000, seeds=SEEDS, memory=0, epss=(0.001, 0.003, 0.01, 0.03, 0.1), tag=None):
     """Constant eps (beta=0), memory 0. If the time-average Delta over the last 2M rounds matches the
     frozen Delta (0.95), the freeze is simply the cycle's occupation measure: falls are slow chains of
     learning events, rises are single free jumps, so the process sits near the top most of the time."""
