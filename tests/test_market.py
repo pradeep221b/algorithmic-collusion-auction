@@ -73,3 +73,10 @@ def test_payoff_tables_match_clearing():
     idx = m.encode((0, 7, 14))
     assert price[idx] == m.PRICES[7]
     assert np.allclose(profit[idx], m.profits(m.PRICES[[0, 7, 14]]))
+
+
+def test_pay_as_bid_pays_own_bid():
+    profit, price = m.payoff_tables(pay_as_bid=True)
+    a = m.encode([0, 14, 14])                      # bids 10, 100, 100: low firm sells 60 MW at its own 10
+    assert profit[a, 0] == 0 and price[a] == 100
+    assert profit[a, 1] == profit[a, 2] == (100 - 10) * 20

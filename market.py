@@ -78,19 +78,21 @@ def decode(idx, n=N_FIRMS, k=N_PRICES):
     return tuple(reversed(out))
 
 
-def payoff_tables(n=N_FIRMS, k=N_PRICES):
+def payoff_tables(n=N_FIRMS, k=N_PRICES, pay_as_bid=False):
     """Evaluate the market once on every action profile.
 
     Returns (profit, price):
       profit[encode(profile), i] = firm i's profit when `profile` is played
       price[encode(profile)]     = clearing price for `profile`
     3375 profiles x 3 firms - the whole game fits in a lookup table.
+    pay_as_bid: same dispatch order, but every dispatched firm is paid its OWN bid (the
+    reported `price` stays the marginal bid, so Delta remains comparable).
     """
     profit = np.zeros((k ** n, n))
     price = np.zeros(k ** n)
     for profile in itertools.product(range(k), repeat=n):
         bids = PRICES[list(profile)]
         p, dispatch = clear_market(bids)
-        profit[encode(profile)] = (p - COST) * dispatch
+        profit[encode(profile)] = ((bids if pay_as_bid else p) - COST) * dispatch
         price[encode(profile)] = p
     return profit, price

@@ -1,5 +1,7 @@
 # Results
 
+> Follow-up: [PHASE1.md](PHASE1.md) explains the memory-0 puzzle below and adds a Q-table indicator that separates the two learners.
+
 Three independent tabular Q-learners, uniform-price auction, single node, parameters exactly
 as in [SPEC.md](SPEC.md). 50 seeds per configuration, hyperparameters fixed before any
 result was seen and never tuned. Everything below is reproducible with

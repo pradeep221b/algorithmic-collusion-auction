@@ -54,12 +54,13 @@ def _argmax(row):
 
 
 @njit(cache=True)
-def train(Q, profit, price, alpha, gamma, beta, n_rounds, conv_rounds, block, seed):
+def train(Q, profit, price, alpha, gamma, beta, n_rounds, conv_rounds, block, seed, eps0=1.0):
     """Run the repeated auction with epsilon-greedy Q-learners. Q is updated in place.
 
     Q       : (n_agents, n_states, n_actions), pre-initialised
     profit  : (n_actions**n_agents, n_agents) payoff table, row = encode(profile)
     price   : (n_actions**n_agents,) clearing price per profile
+    eps0    : epsilon_t = eps0 * exp(-beta t); eps0 < 1 continues training from a converged Q
     Always runs the full horizon: the exploration schedule is part of the algorithm, and
     stopping early would give a single-state (memory-0) learner far less exploration than
     a 3375-state one. Convergence is recorded, not acted on.
@@ -95,7 +96,7 @@ def train(Q, profit, price, alpha, gamma, beta, n_rounds, conv_rounds, block, se
     t_conv = -1
 
     for t in range(n_rounds):
-        eps = np.exp(-beta * t)
+        eps = eps0 * np.exp(-beta * t)
         for i in range(n):
             if np.random.random() < eps:
                 a[i] = np.random.randint(k)
