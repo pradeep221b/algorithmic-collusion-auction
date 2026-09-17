@@ -2,8 +2,7 @@
 import numpy as np
 import pytest
 
-import agents as ag
-import market as m
+from collusim import agents as ag, market as m
 
 PROFIT, PRICE = m.payoff_tables()
 

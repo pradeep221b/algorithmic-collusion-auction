@@ -11,8 +11,8 @@ result was seen and never tuned. Everything below is reproducible with
 
 The learners reach supra-competitive prices: once converged, every seed sits at
 **Δ ≈ 0.62** (95% CI 0.61 to 0.64), and when one agent is forced to undercut, its rivals
-lower their own bids in 88% of seeds, though they return to the old level within 24 rounds
-in only 24%. But the shortsightedness ablation **fails**: agents with no
+lower their own bids in 91% of seeds, though they return to the old level within 24 rounds
+in only 21%. But the shortsightedness ablation **fails**: agents with no
 memory of the past reach *higher* prices (Δ 0.95), and agents that do not value the future
 still reach Δ 0.39. The "unclaimed temptation" fingerprint is present in 100% of seeds, but
 it is equally present in the memory-0 control, which cannot anticipate anything. By the

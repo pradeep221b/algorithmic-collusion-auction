@@ -16,12 +16,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-import agents as ag
-import market as m
+import collusim as cs
+from collusim import agents as ag, market as m
 
 RESULTS = pathlib.Path(__file__).parent / "results"
 FIGURES = pathlib.Path(__file__).parent / "figures"
-PROFIT, PRICE = m.payoff_tables()
+MARKET = cs.Market()            # the spec market; phase1.payasbid swaps in Market(pay_as_bid=True)
+PROFIT, PRICE = MARKET.tables
 
 CONFIGS = {
     "baseline":     dict(gamma=0.95, memory=1, n_rounds=1_000_000),   # SPEC M2, as specified
@@ -49,19 +50,8 @@ def style(ax):
 
 
 def run_seed(seed, gamma, memory, n_rounds, alpha=ag.ALPHA, beta=ag.BETA):
-    """Train one seed to the horizon, then measure Delta on frozen greedy play."""
-    Q = ag.initial_q(PROFIT, gamma, memory)
-    t_conv, streak, s, bsum, bcnt = ag.train(Q, PROFIT, PRICE, alpha, gamma, beta, n_rounds,
-                                             ag.CONV_ROUNDS, ag.BLOCK, seed)
-    trajectory = np.where(bcnt > 0, bsum / np.maximum(bcnt, 1), np.nan)
-    # Delta is measured on what the learned policies DO, not on the noisy training trace:
-    # play greedy from the final state, drop a short transient, average the clearing price.
-    play = ag.greedy_play(Q, PROFIT, PRICE, s, 1_000)
-    mean_price = float(play["prices"][100:].mean())
-    return dict(seed=seed, Q=Q, t_conv=int(t_conv), converged=bool(streak >= ag.CONV_ROUNDS), trajectory=trajectory,
-                final_state=int(play["final_state"]), mean_price=mean_price,
-                delta=float(m.collusion_index(mean_price)),
-                last_profile=[int(x) for x in play["actions"][-1]])
+    """Train one seed to the horizon on MARKET, then measure Delta on frozen greedy play."""
+    return ag.run_seed(MARKET, seed, gamma, memory, n_rounds, alpha, beta)
 
 
 def summarise(deltas):

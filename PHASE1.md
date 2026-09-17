@@ -147,11 +147,11 @@ Bellman residual in §3 remains the qualitative separator.
   Edgeworth cycle run by ε-greedy learners on a discrete grid. It survives slower decay, strong
   perturbation, and a change of auction rule. It is not collusion and it is not an accident.
 - The full learner is doing something the memory-0 learner is not. Two independent measurements
-  say so: its deviation estimates are also stale, but in 72% of temptations the continuation
+  say so: its deviation estimates are also stale, but in 69% of temptations the continuation
   value after deviating is low enough that a fresh estimate would not change the decision (§3);
   and its high price collapses under exploration noise that leaves the memory-0 price untouched
   (§5): memory-0 holds 0.90 at ε = 0.003, memory-1 holds 0.41 there and needs ε = 1e-4 to reach
-  its frozen 0.62. The seven seeds at 0% in §3 are,
+  its frozen 0.62. The twelve seeds at 0% in §3 are,
   by that measure, pure learned continuation. Whether "learned continuation" deserves the name tacit collusion is a
   question about definitions; the measurement is not ambiguous.
 - The M4 verdict in RESULTS.md stands: Δ alone cannot tell these two learners apart, and the spec's

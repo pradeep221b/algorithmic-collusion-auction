@@ -6,8 +6,7 @@ code independently of whether learning ever produces collusion.
 import numpy as np
 import pytest
 
-import indicators as ind
-import market as m
+from collusim import indicators as ind, market as m
 
 CAP, FLOOR = m.N_PRICES - 1, 0
 ALL_CAP = m.encode((CAP,) * 3)
@@ -38,7 +37,7 @@ always_floor = policy(lambda p: FLOOR)                                          
 
 
 def test_punishment_detects_punish_then_forgive():
-    r = ind.punishment(tit_for_tat, ALL_CAP)
+    r = ind.punishment(tit_for_tat, ALL_CAP, m.DEFAULT)
     assert r["verdict"] == "punish_forgive"
     p = r["prices"]
     d = r["rounds"].index(0)
@@ -50,19 +49,19 @@ def test_punishment_detects_punish_then_forgive():
 
 
 def test_punishment_detects_grim_trigger():
-    r = ind.punishment(grim, ALL_CAP)
+    r = ind.punishment(grim, ALL_CAP, m.DEFAULT)
     assert r["verdict"] == "punish_no_recovery"
     assert r["p_late"] == 10
 
 
 def test_punishment_detects_no_reaction():
-    r = ind.punishment(always_cap, ALL_CAP)
+    r = ind.punishment(always_cap, ALL_CAP, m.DEFAULT)
     assert r["verdict"] == "no_reaction"
     assert not r["deviation_was_noop"]
 
 
 def test_punishment_flags_noop_deviation():
-    r = ind.punishment(always_floor, ALL_FLOOR)
+    r = ind.punishment(always_floor, ALL_FLOOR, m.DEFAULT)
     assert r["verdict"] == "no_reaction" and r["deviation_was_noop"]
 
 
@@ -72,13 +71,13 @@ def test_punishment_ignores_self_inflicted_price_drop():
     # forced undercut the PRICE falls from 100 to 55 for good, but no rival reacted.
     sticky = lambda p: FLOOR if p[0] == FLOOR else CAP
     Q = policy_per_agent([sticky, lambda p: 7, lambda p: CAP])
-    r = ind.punishment(Q, m.encode((CAP, 7, CAP)))
+    r = ind.punishment(Q, m.encode((CAP, 7, CAP)), m.DEFAULT)
     assert r["p_pre"] == 100 and r["p_late"] == pytest.approx(m.PRICES[7])
     assert r["verdict"] == "no_reaction"
 
 
 def test_temptation_at_collusive_profile():
-    r = ind.temptation(always_cap, ALL_CAP)
+    r = ind.temptation(always_cap, ALL_CAP, m.DEFAULT)
     assert r["verdict"] == "unclaimed_temptation"
     # each agent earns 90 * 100/3 = 3000; any undercut earns 90 * 60 = 5400 at the same price
     assert r["played_profit"] == pytest.approx([3000] * 3)
@@ -87,7 +86,7 @@ def test_temptation_at_collusive_profile():
 
 
 def test_temptation_at_competitive_profile_is_static_nash():
-    r = ind.temptation(always_floor, ALL_FLOOR)
+    r = ind.temptation(always_floor, ALL_FLOOR, m.DEFAULT)
     assert r["verdict"] == "static_nash"
     assert r["gap_max"] == pytest.approx([0, 0, 0])
     assert r["frac_rounds_static_nash"] == 1.0

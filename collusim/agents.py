@@ -7,11 +7,13 @@ The training loop is compiled with numba because 10^6 rounds x 3 agents x 20+ se
 is too slow in plain Python. The maths is exactly the textbook update:
 
     Q[s, a] <- (1 - alpha) Q[s, a] + alpha (r + gamma * max_a' Q[s', a'])
+
+`run_seed(market, seed, ...)` is the one-call version: train to the horizon, freeze, measure Delta.
 """
 import numpy as np
 from numba import njit
 
-from market import N_FIRMS, N_PRICES, encode
+from .market import N_FIRMS, N_PRICES, encode
 
 ALPHA = 0.15
 GAMMA = 0.95
@@ -152,3 +154,24 @@ def greedy_play(Q, profit, price, state, n_rounds, force=None):
         s = idx if memory else 0
     return {"actions": actions, "prices": prices, "profits": profs, "states": states,
             "final_state": s}
+
+
+def run_seed(market, seed, gamma=GAMMA, memory=1, n_rounds=N_ROUNDS, alpha=ALPHA, beta=BETA,
+             eval_rounds=1_000, burn_in=100):
+    """Train one seed on `market` to the horizon, then measure Delta on frozen greedy play.
+
+    Delta is measured on what the learned policies DO, not on the noisy training trace:
+    play greedy from the final state, drop `burn_in` rounds, average the clearing price.
+    Returns dict(seed, Q, t_conv, converged, trajectory, final_state, mean_price, delta, last_profile).
+    """
+    profit, price = market.tables
+    Q = initial_q(profit, gamma, memory, market.n_firms, market.n_prices)
+    t_conv, streak, s, bsum, bcnt = train(Q, profit, price, alpha, gamma, beta, n_rounds,
+                                          CONV_ROUNDS, BLOCK, seed)
+    trajectory = np.where(bcnt > 0, bsum / np.maximum(bcnt, 1), np.nan)
+    play = greedy_play(Q, profit, price, s, eval_rounds)
+    mean_price = float(play["prices"][burn_in:].mean())
+    return dict(seed=seed, Q=Q, t_conv=int(t_conv), converged=bool(streak >= CONV_ROUNDS),
+                trajectory=trajectory, final_state=int(play["final_state"]), mean_price=mean_price,
+                delta=float(market.collusion_index(mean_price)),
+                last_profile=[int(x) for x in play["actions"][-1]])

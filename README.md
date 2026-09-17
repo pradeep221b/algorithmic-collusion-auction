@@ -21,13 +21,13 @@ calling it tacit collusion. Full numbers, figures and verdicts in [RESULTS.md](R
 
 | | 1M rounds (spec) | 5M rounds (converged) |
 |---|---|---|
-| full learner, Δ mean (95% CI) | 0.39 (0.36–0.43), 18% of seeds > 0.5 | **0.62** (0.61–0.64), 100% of seeds > 0.5 |
-| γ = 0, no future | 0.39 | 0.39 |
-| memory 0, no past | **0.95** | **0.95** |
+| full learner, Δ mean (95% CI) | 0.38 (0.35–0.40), 12% of seeds > 0.5 | **0.62** (0.61–0.63), 100% of seeds > 0.5 |
+| γ = 0, no future | 0.37 | 0.37 |
+| memory 0, no past | **0.94** | **0.94** |
 
 | test | outcome |
 |---|---|
-| M3 punishment | rivals lower their bids in 88% of converged seeds, but forgive within 24 rounds in only 24% |
+| M3 punishment | rivals lower their bids in 91% of converged seeds, but forgive within 24 rounds in only 21% |
 | M4 ablation | **fails**: high prices survive both ablations; memory-0 learners price *higher* |
 | M5 temptation | present in 100% of seeds, but equally in the memory-0 control, so not discriminating |
 
@@ -85,31 +85,74 @@ Agents only ever see the public record of last round's bids and their own profit
 The tests are also run on the ablated learners as controls: a memory-0 agent cannot
 anticipate anything, so if it shows the same "fingerprint" the fingerprint is not evidence.
 
-## Run it
+## Install
 
 ```bash
-pip install -r requirements.txt
-pytest                      # 24 tests: clearing rule, Q-update, indicators on hand-built policies
+pip install git+https://github.com/pradeep221b/algorithmic-collusion-auction.git
+```
+
+That gives you the `collusim` library (numpy + numba only). To reproduce every table and
+figure, clone instead and install with the extras:
+
+```bash
+git clone https://github.com/pradeep221b/algorithmic-collusion-auction.git
+cd algorithmic-collusion-auction
+pip install -e ".[figures,test]"
+pytest                      # 31 tests: clearing rule, Q-update, indicators on hand-built policies, package surface
 python experiments.py       # M2 sweep + M4 ablations, 100 seeds x 6 configs, ~10 min (numba)
 python indicators.py        # M3, M4, M5 verdicts + punishment figure
+python phase1.py sweep      # PHASE1.md experiments: sweep | reinject | residual | payasbid | occupation | fig
 ```
 
 `experiments.py --seeds 20` runs the spec's minimum. Results and figures are regenerated in
-place; `results/*.npz` (the Q-tables, ~200 MB) are gitignored, the JSON summaries are kept.
+place; `results/*.npz` (the Q-tables, ~400 MB at 100 seeds) are gitignored, the JSON summaries
+are kept.
+
+## Use it as a library
+
+```python
+import collusim as cs
+
+market = cs.Market()                       # the spec market
+market = cs.Market(demand=130)             # every firm pivotal: price = highest bid
+market = cs.Market(pay_as_bid=True)        # dispatched firms paid their own bid
+market = cs.Market(n_firms=2, n_prices=5)  # any size; payoff tables are built on first use
+
+r = cs.run_seed(market, seed=0, gamma=0.95, memory=1, n_rounds=5_000_000)
+r["delta"]                                                  # 0 = competitive, 1 = cartel, on frozen play
+cs.punishment(r["Q"], r["final_state"], market)             # M3: do rivals punish, then forgive?
+cs.temptation(r["Q"], r["final_state"], market)             # M5: profitable deviation left unplayed?
+cs.bellman_residual(r["Q"], r["final_state"], market, gamma=0.95)   # learned continuation (→0) or stale estimate (→1)?
+```
+
+Bring your own learner through the environment, which has the shape of PettingZoo's parallel
+API without the dependency:
+
+```python
+env = cs.AuctionEnv(market, memory=1)
+obs = env.reset(seed=0)                                     # state index = last round's bids
+obs, rewards, terminated, truncated, info = env.step([14, 14, 3])   # one price index per firm
+```
 
 ## Layout
 
 ```
-market.py          clearing rule, benchmarks, Δ, payoff lookup tables      (M1)
-agents.py          Q-learning: init, numba training loop, frozen greedy play (M2)
-experiments.py     seed sweep, ablations, trajectory + ablation figures     (M2, M4)
-indicators.py      punishment, ablation verdict, temptation, controls       (M3, M4, M5)
-tests/             pytest suite for all of the above
-results/           per-config JSON summaries, indicators_<config>.json, Q-tables (ignored)
-figures/           price_trajectory.png, ablation_bars.png, punishment.png
-RESULTS.md         Δ with CI, three verdicts, negative results stated plainly
-SPEC.md            the design brief this implements
-design/            workflow diagram source (Claude Design artboard)
+collusim/            the library
+  market.py          Market: clearing rule, benchmarks, Δ, payoff lookup tables          (M1)
+  agents.py          Q-learning: init, numba training loop, frozen greedy play, run_seed  (M2)
+  indicators.py      punishment, ablation verdict, temptation, Bellman residual          (M3, M4, M5)
+  env.py             AuctionEnv: reset/step for your own agents
+experiments.py       seed sweep, ablations, trajectory + ablation figures                (M2, M4)
+indicators.py        runs M3-M5 on every trained seed, writes the summary JSON + figure
+phase1.py            the PHASE1.md experiments
+tests/               pytest suite for all of the above
+results/             per-config JSON summaries, indicators_<config>.json, Q-tables (ignored)
+figures/             price_trajectory.png, ablation_bars.png, punishment.png, phase1.png
+RESULTS.md           Δ with CI, three verdicts, negative results stated plainly
+PHASE1.md            why memory-0 prices are high, and the test that separates the learners
+SPEC.md              the design brief this implements
+READING.md           background reading, in order
+design/              workflow diagram source (Claude Design artboard)
 ```
 
 ## Design choices worth knowing

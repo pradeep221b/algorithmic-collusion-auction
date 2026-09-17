@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-import market as m
+from collusim import market as m
 
 
 def test_all_equal_bids_split_pro_rata():

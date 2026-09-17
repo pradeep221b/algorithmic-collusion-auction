@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it."
+title: "collusim: independent Q-learners in a uniform-price electricity auction"
+authors:
+  - family-names: Sriramula
+    given-names: Pradeep
+version: 0.1.0
+date-released: 2026-09-17
+repository-code: "https://github.com/pradeep221b/algorithmic-collusion-auction"
+license: MIT

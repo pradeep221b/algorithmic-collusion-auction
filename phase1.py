@@ -1,6 +1,6 @@
 """Phase 1: is the high price learned strategy or frozen learning?
 
-    python phase1.py sweep     # beta sweep, memory 0 vs 1            (~30 min, 50 seeds)
+    python phase1.py sweep     # beta sweep, memory 0 vs 1            (~1 h, 100 seeds)
     python phase1.py reinject  # restart converged 5M runs with eps=0.05 (needs results/long, memory0_long)
     python phase1.py residual  # Bellman residual on the temptation action, all configs
     python phase1.py payasbid  # same learners, dispatched firms paid their own bid (mechanism test)
@@ -24,8 +24,8 @@ import sys
 
 import numpy as np
 
-import agents as ag
-import market as m
+import collusim as cs
+from collusim import agents as ag, market as m
 import experiments as ex
 
 BETAS = (1e-6, 3e-6, 1e-5, 3e-5, 1e-4)
@@ -74,7 +74,8 @@ def reinject(beta=ag.BETA, n_rounds=2_000_000):
 
 
 def payasbid():
-    ex.PROFIT, ex.PRICE = m.payoff_tables(pay_as_bid=True)
+    ex.MARKET = cs.Market(pay_as_bid=True)
+    ex.PROFIT, ex.PRICE = ex.MARKET.tables
     cfgs = {"pab_mem0": dict(gamma=0.95, memory=0, n_rounds=5_000_000),
             "pab_mem1": dict(gamma=0.95, memory=1, n_rounds=5_000_000)}
     ex.CONFIGS.update(cfgs)
@@ -117,33 +118,8 @@ def occupation_mem1():
 
 
 def occupation_mem1_long():
-    """Does the memory-1 curve ever meet its frozen 0.62? 30M rounds at eps=1e-4, 20 seeds."""
+    """Does the memory-1 curve ever meet its frozen 0.62? 30M rounds at eps=1e-4, 100 seeds."""
     occupation(n_rounds=30_000_000, memory=1, epss=(1e-4,), tag="_mem1_long")
-
-
-def bellman_residual(Q, state, gamma, rounds=100):
-    """Per agent, mean over cycle states of target(a_dev) - Q[s, a_dev] and the same for the played action."""
-    play = ag.greedy_play(Q, ex.PROFIT, ex.PRICE, state, rounds)
-    n, S, k = Q.shape
-    res_dev, res_played, dev_better = [], [], []
-    for t, a in enumerate(play["actions"]):
-        s = play["states"][t]
-        for i in range(n):
-            alts = np.array([ex.PROFIT[m.encode([*a[:i], b, *a[i + 1:]]), i] for b in range(k)])
-            b = int(np.flatnonzero(alts == alts.max()).max())
-            if alts[b] - alts[a[i]] <= 1e-9:
-                continue                                   # no temptation here
-            for act, store in ((b, res_dev), (a[i], res_played)):
-                profile = m.encode([*a[:i], act, *a[i + 1:]])
-                nxt = profile if S > 1 else 0
-                target = ex.PROFIT[profile, i] + gamma * Q[i, nxt].max()
-                store.append(target - Q[i, s, act])
-            # does a one-step backup already say the deviation beats the played action?
-            tgt_dev = res_dev[-1] + Q[i, s, b]
-            dev_better.append(tgt_dev > Q[i, s, a[i]])
-    f = lambda x: float(np.mean(x)) if x else float("nan")
-    return dict(residual_dev=f(res_dev), residual_played=f(res_played),
-                frac_backup_prefers_dev=f(dev_better), n_temptations=len(res_dev))
 
 
 def residual():
@@ -155,7 +131,7 @@ def residual():
         rows = []
         for r in ex.load_summary(name)["seeds"]:
             z = np.load(ex.RESULTS / name / f"seed_{r['seed']}.npz")
-            rows.append(dict(seed=r["seed"], delta=r["delta"], **bellman_residual(z["Q"], int(z["final_state"]), gamma)))
+            rows.append(dict(seed=r["seed"], delta=r["delta"], **cs.bellman_residual(z["Q"], int(z["final_state"]), ex.MARKET, gamma)))
         dev = np.array([x["residual_dev"] for x in rows])
         out[name] = dict(seeds=rows, residual_dev=ex.summarise(dev[~np.isnan(dev)]),
                          residual_played_mean=float(np.nanmean([x["residual_played"] for x in rows])),

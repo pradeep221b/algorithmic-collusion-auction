@@ -8,3 +8,8 @@ results/**/*.npz
 results/*.log
 # seeded design-canvas page (2 MB editor payload); the artboard source Main.dc.html is kept
 design/collusion-workflow.html
+
+# packaging
+*.egg-info/
+build/
+dist/
