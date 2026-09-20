@@ -13,3 +13,14 @@ design/collusion-workflow.html
 *.egg-info/
 build/
 dist/
+
+# LaTeX build artefacts (paper/main.pdf is kept)
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.toc
+paper/*.synctex.gz
+paper/*.fls
+paper/*.fdb_latexmk

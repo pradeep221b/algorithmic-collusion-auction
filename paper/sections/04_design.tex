@@ -1,0 +1,65 @@
+\section{Experimental design}\label{sec:design}
+
+Table~\ref{tab:params} lists the parameters of the base design. Two pre-registered ablations change one learner parameter each ($\gamma = 0$ and memory~0, Section~\ref{sec:indicators}); the Phase~1 experiments each change one element of the design (the horizon following where the exploration schedule requires) and are specified in Section~\ref{sec:phase1}. The Market and Learner parameters, the 1M horizon and the convergence window come from the project specification; the seeds per cell, the frozen-play length, its burn-in and the CI rule are project choices; all were fixed before any result was seen and none was tuned. The one base parameter added after a result was seen is the 5M horizon (``Two horizons'' below). Apart from $\beta$ and the horizon no hyperparameter was varied in search of a result; the constant-$\varepsilon$ levels of Section~\ref{sec:occupation} and the two restart levels $\varepsilon_0$ of Section~\ref{sec:reinject} are the independent variables of those experiments, fixed with their predictions.
+
+\begin{table}[htbp]
+\centering
+\caption{Parameters of the base design. Notes: the Market and Learner groups, the 1M horizon and the convergence window come from the specification; the seeds per cell, frozen-play length, burn-in and CI rule are design choices fixed before any result was seen; the 5M horizon was added after the 1M results (see ``Two horizons''); the punishment windows and threshold and the collapse criterion are discussed under ``Pre-registration''; ``rounds'' means auction rounds; SE is the standard error across seeds.}
+\label{tab:params}
+\begin{tabular}{llr}
+\toprule
+Group & Parameter & Value \\
+\midrule
+Market & Firms & 3 \\
+ & Capacity per firm & 60 MW \\
+ & Marginal cost & \eur{10}/MWh \\
+ & Demand (inelastic) & 100 MW \\
+ & Price cap & \eur{100}/MWh \\
+ & Bid grid & 15 rungs, \eur{10} to \eur{100} \\
+ & Grid rung & \eur{6.43} \\
+Learner & Learning rate $\alpha$ & 0.15 \\
+ & Discount $\gamma$ & 0.95 (ablation: 0) \\
+ & Exploration decay $\beta$ & $10^{-5}$ (sweep: $10^{-6}$ to $10^{-4}$) \\
+ & Memory $m$ & 1 (ablation and control: 0) \\
+ & States, $m=1$ & 3,375 \\
+ & Initial table $Q_0$ & $\mathbb{E}[\text{profit}(a,\ \text{rivals uniform})]/(1-\gamma)$ \\
+Run & Horizon $T$ & 1M and 5M rounds \\
+ & Convergence window & 100,000 rounds \\
+ & Frozen play & 1,000 rounds \\
+ & Frozen burn-in dropped & 100 rounds \\
+ & Seeds per cell & 100 \\
+ & CI rule & mean $\pm 1.96 \times$ SE \\
+Punishment test & Settling rounds & 200 \\
+ & Pre / post rounds & 6 / 24 \\
+ & Judgement windows & 2 $\times$ 12 rounds \\
+ & Reaction threshold & half a rung (\eur{3.21}) \\
+Ablation & Collapse criterion & $\Dl < 0.25$ and $< \tfrac{1}{2}$ full learner \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Pre-registration.}
+``Pre-registered'' in this paper means written down in the project documents before the corresponding runs; there is no public registry entry. The collapse criterion for the ablation was fixed before the ablation was run. The punishment test follows the procedure of Section~\ref{sec:indicators}; its two 12-round windows and half-rung threshold were fixed before any verdict was read and never changed.
+% TODO-FACT: confirm the last sentence; if the windows and threshold were written down before the first punishment run, say so instead.
+The windows are 12 rounds long so that a converged cycle of period 1, 2, 3, 4 or 6 completes a whole number of times in each; cycles of period 5 or 7, which occur in 9 of the 100 long-run seeds, are not covered and can be misread (Section~\ref{sec:discussion}), and at 1M rounds, where periods run up to 56 and only 23 of 100 seeds have period four or less, the 12-seed verdicts of Table~\ref{tab:m3} are more exposed to this misreading than the long-run ones. The Phase~1 experiments were designed after the results of Section~\ref{sec:results} were seen; their five predictions were written down before the corresponding runs and are listed with their outcomes, two of which failed, in Section~\ref{sec:phase1}.
+
+\paragraph{Acceptance rules.}
+No numerical acceptance threshold for M2 is on record: the specification asks for a meaningful fraction of seeds that converge to $\Dl > 0.5$. We report the share of seeds above $\Dl = 0.5$ and call M2 met only where every seed exceeds it, which is the case at 5M rounds (100\%, all converged) and not at 1M (12\%, none converged); readers who accept a lower threshold may read the 1M result differently. M3 is judged with firm~1 as the forced deviator, the code's default; the verdicts for firms~2 and~3 are reported in Appendix~\ref{app:extra}, and no rule for combining the three was fixed in advance. M4 is met only if both ablated learners collapse, $\Dl < 0.25$ and below half the full learner's $\Dl$. M5 is a necessary condition: the collusion reading requires an unclaimed gap, and the memory-0 control tests whether it is sufficient. The outcome is read as supporting tacit collusion only if M2, M3 (punish--forgive) and M4 are all met and M5 fires for the memory-1 learner but not for the control.
+
+\paragraph{Seeds and confidence intervals.}
+Every configuration is run on 100 independent seeds; where a table reports a subset (the seeds with $\Dl > 0.5$, labelled ``collusive'' in Section~\ref{sec:results}) it says so. A seed fixes the random draws of a run; the initial tables are deterministic. Means are reported with a 95\% confidence interval of mean $\pm 1.96$ times the standard error across seeds; medians, ranges and per-seed counts are reported with the price levels in Section~\ref{sec:results}. A 50-seed run of the whole study preceded the 100-seed run; every $\Dl$ moved by at most 0.02 between the two.
+% TODO-FACT: whether the 50 seeds are the first 50 of the 100.
+
+\paragraph{Two horizons.}
+At the specified $T = 1$M rounds the learners are almost greedy ($\varepsilon_t = 4.5 \times 10^{-5}$, Section~\ref{sec:learners}), yet $\Dl = 0.375$, no seed meets the convergence criterion and M2 is not met (Section~\ref{sec:results}). The 5M-round horizon is not in the specification: it was added after that result was seen and is not pre-registered, and every base configuration converges in every seed there.
+% TODO-FACT: whether the 30M-round $\varepsilon = 10^{-4}$ occupation point was among the pre-registered levels; if not, name it here as a second post-hoc addition.
+We report both horizons: M2 fails at 1M and is met at 5M, M4 and M5 give the same verdict at both, and M3 is judged on 12 seeds at 1M and on all 100 at 5M; the headline $\Dl = 0.621$ comes from the added one. Every run goes to its full horizon.
+
+\paragraph{What is measured, and on what.}
+$\Dl$ and all behavioural indicators are computed on frozen play as defined in Section~\ref{sec:indicators}: 1,000 greedy rounds from the final state, the first 100 dropped. Outside the constant-$\varepsilon$ experiment of Section~\ref{sec:occupation}, no reported $\Dl$ or verdict is computed on the training trace, because it mixes exploration draws with the learned policy in a share that changes with $t$; the training-trace prices in Figures~\ref{fig:trajectory} and~\ref{fig:trajectory5m} and the lowest 1,000-round mean of Table~\ref{tab:reinject} are descriptive only. Frozen play isolates the greedy policy from the final state; it visits only the cycle reachable from that state, and M5 and the Bellman residual are computed on that cycle alone. The punishment test adapts the one-round forced deviation of \citet{calvano2020}, with the verdict read on the rivals' bids against a no-deviation counterfactual because, from any profile at which the two lowest bids are tied, a lone undercut does not move the price (Section~\ref{sec:market}), so the price is an unreliable signal of a reaction.
+
+\paragraph{The memory-0 control.}
+The memory-0 learner sees one state, so it cannot condition on what rivals did last round and cannot carry a threat; on the working definition of Section~\ref{sec:related}, a firm holding back because it expects retaliation \citep{tirole1988,ivaldi2003}, whatever price it reaches is by construction not tacit collusion. In a Q-learner such a threat, if it exists, lives in the learned continuation values, and the control calibrates the indicators against that. An indicator that reads the same on both learners does not by itself distinguish a learned continuation from a stale estimate; and an indicator that separates them because a one-state table has nothing to react to shows that the memory-1 policy conditions on rivals' bids, which its state permits but does not guarantee, and not that the conditioning is a threat (Section~\ref{sec:discussion}).
+
+\paragraph{Compute and reproducibility.}
+The auction and learning loop are compiled with numba and run at about 0.4~s per 1M rounds per seed; the six base configurations at 100 seeds take about 9 minutes and the whole study about two hours sequentially on a laptop with no GPU. The code is the Python package \texttt{collusim} v0.1.0 with 31 tests (Appendix~\ref{app:repro}); every simulation number in this paper is taken from the stored \texttt{results/*.json} files, which the scripts described there produce, and the one-shot payoffs, Nash equilibria and deviation gains of Section~\ref{sec:market} are computed from the payoff table with the same package.

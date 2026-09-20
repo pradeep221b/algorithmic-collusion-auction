@@ -1,0 +1,128 @@
+\section{Reproduction}\label{app:repro}
+
+Everything in this paper is produced by the Python package \texttt{collusim} (version 0.1.0; numpy and numba are its only runtime dependencies) and three scripts that sit on top of it. The repository is at \url{https://github.com/pradeep221b/algorithmic-collusion-auction}. To reproduce every table and figure, clone the repository and run, in order,
+\begin{verbatim}
+pip install -e ".[figures,test]"
+pytest
+python experiments.py
+python indicators.py
+python phase1.py <sweep|reinject|residual|payasbid|occupation|
+                  occupation_mem1|occupation_mem1_long|fig>
+\end{verbatim}
+\texttt{pytest} runs the 31 tests (clearing rule, Q-update, indicators on hand-built policies, package surface). \texttt{experiments.py} runs the price-level study of Section~\ref{sec:results} and the ablations of Table~\ref{tab:m4}. \texttt{indicators.py} runs the punishment, ablation and temptation verdicts. \texttt{phase1.py} takes one subcommand per experiment of Section~\ref{sec:phase1}; \texttt{occupation} is the memory-0 occupation run, \texttt{occupation\_mem1} the memory-1 run at the same five noise levels, \texttt{occupation\_mem1\_long} the single 30M-round point at $\varepsilon = 10^{-4}$, and \texttt{fig} draws Figure~\ref{fig:phase1} from the stored results.
+
+The training loop is compiled with numba and runs at about 0.4 s per million rounds per seed. Measured at 100 seeds, one process per job, on a 12-thread laptop with no GPU: the six base configurations take about 9 minutes in total; the ten cells of the $\beta$ sweep about 27 minutes; the two pay-as-bid runs about 4 minutes; the re-injection runs about 6 minutes; the Bellman residual about 2 minutes; the indicator battery on all six configurations about 3 minutes; each occupation curve about 10 minutes and the single 30M-round point about 20 minutes. Run sequentially the whole study takes about two hours; with the jobs overlapped, under an hour and a half. The environment used was Python 3.14 with numpy 2.x.
+
+Every number in the paper is stored per seed, in the \texttt{results} directory. The file \texttt{<config>.json} holds, for each seed, the frozen-play $\Dl$, the convergence round and the last-round profile; the file \texttt{indicators\_\allowbreak<config>.json} holds every punishment, ablation and temptation verdict; the file \texttt{phase1\_\allowbreak<name>.json} holds the Phase-1 results. The final Q-tables are saved as \texttt{.npz} files next to the JSON summaries and are not committed to the repository; the re-injection and residual experiments read them, so those two subcommands need the base runs to have been executed first. The re-injection restarts draw from a separate seed stream, so the new exploration draws are independent of the original training draws.
+
+One naming convention differs between the code and the paper. The code indexes firms 0, 1, 2; the paper calls them firms 1, 2, 3 throughout. Firm 1 in the paper is agent 0 in the code, and the ``deviator = firm 1'' rows of Section~\ref{sec:results} are the code's default \texttt{deviator=0}.
+
+\section{Parameters and procedures}\label{app:params}
+
+\paragraph{Price grid.} The 15 admissible bids are the points of \texttt{linspace(10, 100, 15)}, so rung $r$ has price $p_r = 10 + (r-1)\cdot 90/14$ \texteuro/MWh and one rung is \eur{6.43}. Table~\ref{tab:app-grid} lists them. In the body of the paper bid profiles are written with prices rounded to the nearest euro, so that (10,\,16,\,16) means rungs 1, 2, 2.
+
+\begin{table}[htbp]
+\centering
+\caption{The bid grid. Notes: prices in \texteuro/MWh; the marginal cost is \eur{10} and the price cap \eur{100}.}
+\label{tab:app-grid}
+\begin{tabular}{rr@{\qquad}rr@{\qquad}rr}
+\toprule
+$r$ & $p_r$ & $r$ & $p_r$ & $r$ & $p_r$ \\
+\midrule
+1 & 10.00 & 6 & 42.14 & 11 & 74.29 \\
+2 & 16.43 & 7 & 48.57 & 12 & 80.71 \\
+3 & 22.86 & 8 & 55.00 & 13 & 87.14 \\
+4 & 29.29 & 9 & 61.43 & 14 & 93.57 \\
+5 & 35.71 & 10 & 67.86 & 15 & 100.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Learner parameters.} Learning rate $\alpha = 0.15$, discount $\gamma = 0.95$ (or 0 in the ablation), exploration $\varepsilon_t = e^{-\beta t}$ with $\beta = 10^{-5}$, so that $\varepsilon = 0.37$ at $10^5$ rounds, $0.05$ at $3\times 10^5$ and $4.5\times 10^{-5}$ at $10^6$. With memory 1 the state is last round's full bid profile, $15^3 = 3{,}375$ states; with memory 0 there is one state. The table is initialised at $Q_0[s,a] = \mathbb{E}[\text{profit}(a,\ \text{rivals uniform})]/(1-\gamma)$. Horizons are 1M and 5M rounds and every run goes to the full horizon. These values were fixed in the specification before any result was seen and were never tuned.
+
+\paragraph{Convergence.} A run is recorded as converged when no agent's greedy action, in any state, changed during the last 100,000 rounds. The flag is recorded and reported; it never stops a run.
+
+\paragraph{Frozen play and $\Dl$.} Learning and exploration are switched off, the agents play greedily from the final state for 1,000 rounds, the first 100 rounds are dropped, and $\Dl = (\bar p - 10)/90$ is computed from the mean clearing price $\bar p$ of the remaining 900.
+
+\paragraph{Punishment procedure.} Learning stays frozen. Greedy play first settles for 200 warm-up rounds. Six pre-deviation rounds are recorded. In the next round the deviator is forced to bid \eur{10}; the rivals play their greedy actions. Twenty-four post-deviation rounds of greedy play follow. A counterfactual path is generated from the same state with no forced bid. The verdict is read off the rivals' bids relative to the counterfactual in two windows, rounds 1--12 and 13--24 after the deviation, with a threshold of half a rung, $\eur{3.21}$: \emph{punish--forgive} if the rivals' mean bid is at least \eur{3.21} below the counterfactual in rounds 1--12 and back within \eur{3.21} in rounds 13--24; \emph{punish, no recovery} if below in both windows; \emph{no reaction} if the rivals do not move. A case is a \emph{no-op} when the deviator was already bidding \eur{10}, so that the forced bid changes nothing. Twelve-round windows were chosen because 12 is divisible by the cycle lengths 1 to 4 and 6; periods 5 and 7 are not covered, which affects 9 seeds in the long run.
+
+\paragraph{Temptation.} At every state on the converged cycle and for every firm, the best one-shot deviation profit, with rivals held at their greedy actions, minus the realised profit. A seed has ``unclaimed temptation'' if any such gap is positive.
+
+\paragraph{Bellman residual.} For every temptation on the converged cycle, indexed by firm $i$, state $s$, played action $a_i$ and best unplayed deviation $a_{\mathrm{dev}}$, let $a_{-i}(s)$ denote the rivals' greedy actions at $s$ and $s'(a)$ the state that follows when firm $i$ plays $a$ against them. Define the one-step target and residual of an action $a$ as
+\begin{align*}
+\mathrm{target}_i(s,a) &= \pi_i\big(a,\ a_{-i}(s)\big) + \gamma \max_{a'} Q_i\big(s'(a),\ a'\big), \\
+\mathrm{resid}_i(s,a) &= \mathrm{target}_i(s,a) - Q_i(s,a),
+\end{align*}
+evaluated with the current, frozen table. The residual on the played action is a check: it must be near zero on a converged cycle, and it is. The residual on $a_{\mathrm{dev}}$ measures how far the stored deviation value is from what one fresh update would make it. A backup \emph{prefers the deviation} when $\mathrm{target}_i(s,a_{\mathrm{dev}}) > Q_i(s,a_i)$, that is, when a single update of the deviation entry would already flip the greedy choice. The share reported in Table~\ref{tab:residual} is the fraction of a seed's temptations at which this holds, averaged over seeds. Its limitation is that $Q_i(s'(a),\cdot)$ is itself taken from the same table and may be stale; a $k$-step rollout would be stricter and was not done.
+
+\section{Additional results}\label{app:extra}
+
+\paragraph{Punishment by deviator.} Table~\ref{tab:m3} reports the long-run verdicts with firm 1 as the forced deviator. Table~\ref{tab:app-deviator} repeats the split for firms 2 and 3. The shares are similar in aggregate, but the verdict for a given seed changes with the identity of the deviator in 61 of 100 seeds. In 47\% of seeds at least one of the three deviators produces a punish--forgive verdict.
+
+\begin{table}[htbp]
+\centering
+\caption{Punishment verdicts in the long run (5M rounds, memory 1, 100 seeds) by identity of the forced deviator. Notes: percentages of seeds; the firm-1 row is the one in Table~\ref{tab:m3}; 2\% of firm-1 cases are no-ops (the deviator was already at \eur{10}).}
+\label{tab:app-deviator}
+\begin{tabular}{lrrr}
+\toprule
+Deviator & punish--forgive & punish, no recovery & no reaction \\
+\midrule
+Firm 1 & 21 & 70 & 9 \\
+Firm 2 & 20 & 69 & 11 \\
+Firm 3 & 17 & 73 & 10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Mean paths around the deviation.} Table~\ref{tab:app-path} gives the mean clearing price and the rivals' mean bid gap to the counterfactual in the two post-deviation windows, for all 100 long-run seeds and for the two main verdict subsets. Averaged over all seeds the rivals' bids sit 16.7 below the counterfactual in rounds 1--12 and 13.5 below in rounds 13--24, and the clearing price falls from \eur{66.0} before the deviation to \eur{45.1} and then \eur{49.4}, against a counterfactual of \eur{65.9} in both windows. The forgive subset falls to \eur{49.9} in the first window and returns almost exactly to its counterfactual in the second (gap 0.2, price \eur{63.2} against \eur{65.4}); the no-recovery subset stays about 20 below it and its price remains in the low forties.
+
+\begin{table}[htbp]
+\centering
+\caption{Mean price paths around a forced one-round undercut, long run (5M rounds, memory 1, deviator firm 1). Notes: ``rivals' cut'' is how far the rivals' mean bid sits below its counterfactual value, in \texteuro/MWh; prices are mean clearing prices in \texteuro/MWh; the counterfactual is the same rounds with no forced bid.}
+\label{tab:app-path}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & & \multicolumn{2}{c}{rivals' cut} & \multicolumn{3}{c}{clearing price} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-7}
+Seeds & $n$ & rounds 1--12 & rounds 13--24 & rounds 1--12 & rounds 13--24 & counterfactual \\
+\midrule
+All & 100 & 16.7 & 13.5 & 45.1 & 49.4 & 65.9 \\
+Punish--forgive & 21 & 10.9 & 0.2 & 49.9 & 63.2 & 65.4 \\
+Punish, no recovery & 70 & 20.5 & 19.1 & 41.8 & 43.8 & 66.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Converged profiles.} Table~\ref{tab:app-profiles} lists the most common last-round bid profiles on frozen play for the $\gamma = 0$ long run and the two pay-as-bid runs. The $\gamma = 0$ learner ends on long irregular cycles: only 20 of 100 seeds have period 4 or less and periods run up to 25, and its most common profiles are one-shot Nash profiles or near them, with one firm at cost and two tied one or more rungs above. The pay-as-bid runs end at symmetric ties, each firm selling a third of demand at its own bid, at a higher level without memory than with it.
+
+\begin{table}[htbp]
+\centering
+\caption{Most common last-round bid profiles on frozen play, 5M rounds, 100 seeds per run. Notes: bids rounded to the nearest euro; count is the number of seeds ending at that profile; permutations of an asymmetric profile are pooled.}
+\label{tab:app-profiles}
+\begin{tabular}{llr}
+\toprule
+Run & Profile & Seeds \\
+\midrule
+$\gamma = 0$, memory 1 & (10, 16, 16) & 15 \\
+ & (10, 36, 36) & 10 \\
+ & (10, 42, 42) & 10 \\
+ & (10, 29, 29) & 9 \\
+ & (16, 42, 42) & 7 \\
+ & (10, 55, 55) & 7 \\
+\midrule
+Pay-as-bid, memory 0 & (68, 68, 68) & 16 \\
+ & (94, 94, 94) & 12 \\
+ & (81, 81, 81) & 9 \\
+ & (87, 87, 87) & 8 \\
+\midrule
+Pay-as-bid, memory 1 & (55, 55, 55) & 13 \\
+ & (49, 49, 55) & 9 \\
+ & (61, 61, 61) & 8 \\
+ & (49, 49, 49) & 8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Block-to-block moves in the occupation runs.} In the constant-$\varepsilon$ runs of Table~\ref{tab:occupation} the price is averaged in blocks, and a move is counted when the block mean changes by more than \eur{5}. The two learners move differently. The memory-0 learner makes large jumps: about \eur{28} in either direction at $\varepsilon \le 0.03$ and about \eur{22} at $\varepsilon = 0.1$, which is the signature of the walk down the grid and the single jump back up described in Section~\ref{sec:discussion}. The memory-1 learner makes small ones: about \eur{10} at $\varepsilon \le 0.003$, about \eur{8} at $\varepsilon = 0.01$, about \eur{4}--\eur{5} at $\varepsilon = 0.03$, and none at all at $\varepsilon = 0.1$, where its time-average $\Dl$ is 0.336 and no block exceeds $\eur{55}$.

@@ -1,0 +1,55 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
+\usepackage[round,authoryear]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{textcomp}
+
+\captionsetup{font=small,labelfont=bf}
+\sisetup{group-separator={,},group-minimum-digits=4}
+
+% macros (see STYLE.md)
+\newcommand{\Dl}{\Delta}
+\newcommand{\eur}[1]{\text{\texteuro}#1}
+\newcommand{\MW}{\ensuremath{\mathrm{MW}}}
+
+\title{Collusion or frozen learning?\\ \large Independent Q-learners in a uniform-price electricity auction}
+\author{Pradeep Sriramula\thanks{Independent researcher. Code, data and every number in this paper:
+\url{https://github.com/pradeep221b/algorithmic-collusion-auction}. Comments welcome.}}
+\date{September 2026 \\ \small Working paper, version 0.1}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/01_intro}
+\input{sections/02_related}
+\input{sections/03_model}
+\input{sections/04_design}
+\input{sections/05_results}
+\input{sections/06_phase1}
+\input{sections/07_discussion}
+\input{sections/08_conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\input{sections/appendix}
+
+\end{document}

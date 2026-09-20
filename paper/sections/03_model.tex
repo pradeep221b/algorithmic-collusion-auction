@@ -1,0 +1,123 @@
+% 03_model.tex — Section 3: Model. Numbers from paper/FACTS.md only.
+\section{Model}\label{sec:model}
+
+Figure~\ref{fig:pipeline} shows the order of the pipeline.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw=black, fill=black!6, rounded corners=2pt, align=center,
+              text width=2.9cm, inner sep=5pt, minimum height=1.35cm},
+  arrow/.style={-{Latex[length=2mm]}, thick, draw=black},
+  node distance=0.55cm and 0.55cm
+]
+\node[box] (market) {\textbf{Market}\\ 3 firms, 15 prices,\\ clearing rule};
+\node[box, right=of market] (table) {\textbf{Payoff table}\\ 3,375 profiles:\\ profit and price};
+\node[box, right=of table] (learners) {\textbf{3 Q-learners}\\ independent, $T$ rounds,\\ $\varepsilon_t = e^{-\beta t}$};
+\node[box, right=of learners] (freeze) {\textbf{Frozen play}\\ greedy actions;\\ no learning, no $\varepsilon$};
+\node[box, below=1.3cm of market] (delta) {\textbf{Index $\Dl$}\\ mean price\\ on frozen play};
+\node[box, right=of delta] (behav) {\textbf{Three behavioural tests}\\ punishment, ablation,\\ temptation};
+\node[box, right=of behav] (qtable) {\textbf{Q-table test}\\ Bellman residual};
+\node[box, right=of qtable] (verdict) {\textbf{Verdict}\\ does the test tell a learned\\ continuation from a stale estimate?};
+\draw[arrow] (market) -- (table);
+\draw[arrow] (table) -- (learners);
+\draw[arrow] (learners) -- (freeze);
+\draw[arrow] (freeze.south) -- ++(0,-0.5) -| (delta.north);
+\draw[arrow] (delta) -- (behav);
+\draw[arrow] (behav) -- (qtable);
+\draw[arrow] (qtable) -- (verdict);
+\end{tikzpicture}
+\caption{The pipeline. The payoff table is the clearing rule evaluated once on every bid profile; training, freezing, and every test read from it. $\Dl$, the punishment and temptation tests and the Bellman residual are computed on frozen greedy play, not on the training trace; the ablation retrains the learner and reads its $\Dl$ the same way; only the occupation measure of Section~\ref{sec:occupation} is measured while exploring. Of the four tests only the Q-table test tells a learned continuation from a stale estimate; the punishment test also differs across the two learners, but only because a one-state table has nothing to react to (Section~\ref{sec:discussion}).}
+\label{fig:pipeline}
+\end{figure}
+
+\subsection{The auction}\label{sec:market}
+
+Three symmetric firms, $i = 1, 2, 3$, each with 60~MW of capacity and a marginal cost of \eur{10}/MWh, bid into a single-node uniform-price auction with inelastic demand of 100~MW and a price cap of \eur{100}/MWh (Table~\ref{tab:market}). The setting follows \citet{seredynski2026} at single-node scale, with no network, no congestion and one demand level; the format is the multi-unit uniform-price auction of \citet{vonderfehr1993} and \citet{fabra2006}. Each round every firm submits one price from a grid of 15 rungs, $p_r = 10 + (r-1)\cdot 90/14$ for $r = 1, \dots, 15$, so one rung is \eur{6.43}.
+
+\begin{table}[t]
+\caption{Market parameters. Notes: the grid is $\mathrm{linspace}(10, 100)$ with 15 points; total capacity is 180~MW; any two firms cover demand ($120 \geq 100$), so no firm is pivotal.}
+\label{tab:market}
+\centering
+\small
+\begin{tabular}{llr}
+\toprule
+Parameter & Symbol & Value \\
+\midrule
+Firms & $n$ & 3 \\
+Capacity per firm (MW) & $q_i$ & 60 \\
+Marginal cost (\eur{}/MWh) & $c$ & 10 \\
+Demand, inelastic (MW) & $D$ & 100 \\
+Price cap (\eur{}/MWh) & $p_{\max}$ & 100 \\
+Bid grid & $p_r$ & 15 rungs, 10 to 100 \\
+Grid step (\eur{}/MWh) & & 6.43 \\
+Competitive benchmark (\eur{}/MWh) & $p^{c}$ & 10 \\
+Collusive benchmark (\eur{}/MWh) & $p^{m}$ & 100 \\
+Collusion index & $\Dl$ & $(\bar p - 10)/90$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Bids are sorted in ascending order and dispatched in that order until 100~MW is covered. The clearing price $p$ is the bid of the last unit dispatched, every dispatched firm is paid $p$, and ties at the margin split the residual demand pro rata to capacity. Firm $i$ earns $(p - 10)\,x_i$ on its dispatched quantity $x_i \le q_i$.
+
+The clearing rule has one property the rest of the paper relies on: the clearing price is always the second-lowest bid. The lowest bidder sells 60~MW, the second-lowest sells the remaining 40~MW, and the highest sells nothing unless tied. From any profile at which the two lowest bids are tied, including every symmetric profile, a lone one-rung undercut does not move the price; if the undercutter was one of the tied pair it becomes the lowest bidder and is paid the rivals' bid for its full 60~MW. When all three firms bid the cap, a lone one-rung undercut raises the undercutter's profit from \eur{3{,}000} to \eur{5{,}400} without moving the price, whereas when the two lowest bids differ an undercut that lands between them does move it, as at the most common memory-0 rest point, $(10, 100, 100)$, of Section~\ref{sec:results}, where a high bidder shaving one rung clears the market at \eur{93.57} and sells 40~MW. From a symmetric profile the price falls only when a second firm follows the first down. The punishment test below therefore judges reactions on the rivals' bids, not on the price.
+
+The competitive benchmark is bidding at cost, $p^{c} = 10$; the collusive benchmark is the cap, $p^{m} = 100$, the joint-profit maximum under inelastic demand. Adapting the profit index of \citet{calvano2020} to prices, with cost rather than the one-shot Nash outcome as the zero, the collusion index is
+\begin{equation}
+\Dl = \frac{\bar p - 10}{100 - 10},
+\end{equation}
+where $\bar p$ is the mean clearing price on frozen play; $\Dl = 0$ at the competitive benchmark and $\Dl = 1$ at the cap. The pay-as-bid variant of Section~\ref{sec:phase1} keeps the dispatch rule but pays each dispatched firm its own bid; the reported price stays the marginal bid, so $\Dl$ remains comparable as an index of the marginal bid, though under pay-as-bid it is no longer the price every dispatched firm is paid.
+
+Enumerating all 3,375 profiles gives seven pure Nash equilibria of the one-shot game, in three shapes (Table~\ref{tab:nash}). All three firms at cost is the non-pivotal equilibrium of \citet{vonderfehr1993}: when any two firms cover demand, competition drives the price to cost. In the other two, one firm bids cost and the two others tie one or two rungs above it; the tied firms gain nothing from the lower rungs open to them, and the low firm cannot gain by raising its bid. Profiles of this shape exist on any grid; their $\Dl$ is one or two rungs and shrinks with the rung, so they are a grid artefact in size rather than in kind. The consequence is that the competitive benchmark on this grid is a band, $\Dl \in [0, 0.14]$, rather than a point; every mean $\Dl$ reported later lies far above it; a few individual $\gamma = 0$ seeds do not (minimum 0.071, and the 5\% that end at a one-shot Nash profile).
+
+\begin{table}[t]
+\caption{Pure Nash equilibria of the one-shot game on the 15-rung grid. Notes: bids and price in \eur{}/MWh, profits in \eur{} per round, listed in the order of the bids shown; the second and third shapes each stand for three profiles (all permutations of the firms).}
+\label{tab:nash}
+\centering
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Shape & Bids & Profiles & Price & Profits & $\Dl$ \\
+\midrule
+All at cost & (10, 10, 10) & 1 & 10.00 & (0, 0, 0) & 0.00 \\
+One at cost, two tied one rung up & (10, 16.43, 16.43) & 3 & 16.43 & (386, 129, 129) & 0.07 \\
+One at cost, two tied two rungs up & (10, 22.86, 22.86) & 3 & 22.86 & (771, 257, 257) & 0.14 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The learners}\label{sec:learners}
+
+Each firm runs independent tabular Q-learning \citep{watkins1992}: one table per firm, no shared parameters, no communication, as in \citet{calvano2020}. Firm $i$ observes its own profit and the public record of last round's bids. The state $s_t$ is that record, the full bid profile of round $t-1$, so there are $15^3 = 3{,}375$ states and each table $Q_i(s, a)$ has $3{,}375 \times 15$ entries; we call this memory $m = 1$. The memory-0 variant ($m = 0$) has a single state, one row of 15 entries, so the learner cannot condition on anything. The action $a_{i,t}$ is a rung and the reward $\pi_{i,t}$ is the firm's own profit in round $t$. After each round every firm updates one entry,
+\begin{equation}
+Q_i(s_t, a_{i,t}) \leftarrow (1 - \alpha)\, Q_i(s_t, a_{i,t}) + \alpha \Big[ \pi_{i,t} + \gamma \max_{a'} Q_i(s_{t+1}, a') \Big],
+\label{eq:qupdate}
+\end{equation}
+with $\alpha = 0.15$ and $\gamma = 0.95$. The $\gamma = 0$ variant keeps the state but values only the current round's profit.
+
+Exploration is $\varepsilon$-greedy: in round $t$ each firm independently plays a uniformly random rung with probability $\varepsilon_t$ and otherwise $\arg\max_a Q_i(s_t, a)$, with
+\begin{equation}
+\varepsilon_t = e^{-\beta t}, \qquad \beta = 10^{-5},
+\end{equation}
+with its values at the horizons used tabulated in Appendix~\ref{app:params}. Exploratory bids enter the public record, and so the next state, like any other bid. Tables are initialised as in \citet{calvano2020}, $Q_0(s, a) = \mathbb{E}[\pi_i(a, a_{-i})]/(1 - \gamma)$ with rivals uniform on the grid; since the argmax breaks ties toward the lowest rung, an all-zero table would bias every unvisited state toward the lowest price.
+
+The horizon is $T = 10^6$ rounds in the specification and $5 \times 10^6$ in the long runs, a horizon added after the 1M result was seen (Section~\ref{sec:design}); every run goes to its full horizon. A run is \emph{converged} if no firm's greedy action in any state changed during the last 100,000 rounds; the flag is recorded, not acted on. \emph{Frozen play} is greedy play with learning and exploration switched off. $\Dl$ is measured on frozen play: from the final state of training, play 1,000 greedy rounds, drop the first 100, and take the mean clearing price. The one exception, the time-average $\Dl$ of the exploring process in Section~\ref{sec:occupation}, is labelled as such.
+
+\subsection{The indicators}\label{sec:indicators}
+
+A supra-competitive $\Dl$ is an observation; tacit collusion is a claim about why the price sits there. We apply three behavioural indicators, the forced-deviation test of \citet{calvano2020}, a shortsightedness ablation that retrains the learner without a future or without a past, and an unclaimed-temptation test on the frozen cycle, and add a fourth test that reads the Q-table directly.
+
+\paragraph{M3, punishment.} With learning frozen, the deviating firm is forced to bid \eur{10} for one round of greedy play, and the rivals' bids over the next 24 rounds are compared with a counterfactual path from the same state with no deviation, in two 12-round windows, rounds 1--12 and 13--24 (12 divides the cycle lengths 1--4 and 6; procedure and the 5- and 7-cycle caveat in Appendix~\ref{app:params}). \emph{Punish-forgive}: rivals bid at least half a rung (\eur{3.21}) below the counterfactual in rounds 1--12 and are back within half a rung in 13--24. \emph{Punish, no recovery}: below in both windows. \emph{No reaction}: the rivals' mean bid is not more than half a rung below the counterfactual in rounds 1--12. The three verdicts are exhaustive and exclusive; a deviator already bidding \eur{10} is flagged as a no-op, and each firm serves as deviator in turn. The verdict is read from the rivals' bids alone, not from the price or the deviator's own later bids, so a return to the old bid is not retaliation and the deviation round's profit does not enter it. That profit is never lower than before at the profiles the full learner converges to, and strictly higher unless the deviator was already the sole lowest bidder: it becomes (or remains) the lowest bidder and sells 60~MW at the lower of its rivals' bids. At a memory-0 rest point (low, high, high) a high bidder forced to \eur{10} drives the price down to the low bidder's bid and sells 60~MW at it; when the low bidder is at cost, as in the modal profile $(10, 100, 100)$ and in 36 of 100 long seeds, the price is \eur{10} and the deviator earns nothing that round.
+
+\paragraph{M4, shortsightedness ablation.} The full learner is rerun with $\gamma = 0$ and, separately, with memory~0. If the high price were tacit collusion, which needs a future to care about and a past to condition on, both ablations should remove it. The criterion was fixed in advance: an ablated $\Dl$ has collapsed if it is below 0.25 and below half the full learner's $\Dl$. The indicator passes only if both collapse.
+
+\paragraph{M5, unclaimed temptation.} Frozen play from the final state traces the cycle of greedy play; at 5M rounds this is the converged cycle, at 1M rounds, where no baseline seed met the convergence criterion, it is the cycle of the frozen but unconverged table. At every state on it, each firm's best one-shot deviation profit, rivals fixed at their greedy actions, is compared with its realised profit; among tied best deviations the smallest undercut is taken. The verdict is \emph{unclaimed temptation} if any gap is positive and \emph{static Nash} if every gap is zero. An unclaimed gap is necessary for the collusion reading, under which the profit is forgone because a reaction is anticipated; whether it is sufficient is what the memory-0 control tests.
+
+\paragraph{Bellman residual.} The fourth test asks whether one fresh update of the unplayed deviation's value, using the continuation values already in the learner's table, would change its decision. For every temptation found by M5, with firm $i$ in state $s$ playing $a_i$ and best unplayed deviation $a_{\mathrm{dev}}$, let $s'$ be the state recorded if $a_{\mathrm{dev}}$ were played against the rivals' greedy actions $a_{-i}$ (the single state under memory~0). One application of equation~\eqref{eq:qupdate} would move the deviation's entry toward the target
+\begin{equation}
+y_i(s, a_{\mathrm{dev}}) = \pi_i(a_{\mathrm{dev}}, a_{-i}) + \gamma \max_{a'} Q_i(s', a'),
+\qquad
+\rho_i(s, a_{\mathrm{dev}}) = y_i(s, a_{\mathrm{dev}}) - Q_i(s, a_{\mathrm{dev}}),
+\end{equation}
+and $\rho_i$ is the Bellman residual on the deviation. On the played action the residual is near zero on every converged table (of order $10^{-11}$ for the full learner), as it must be at a rest point of the update; this serves as a check. The statistic reported is the share of temptations for which one backup already prefers the deviation, $y_i(s, a_{\mathrm{dev}}) > Q_i(s, a_i)$. We read a share of one as a deviation estimate that has not been refreshed since the rivals settled, since a single look would flip the decision; we read a share near zero as a learned continuation, since the state reached by deviating is worth less under the learner's own table. Both readings are interpretations of a one-step statistic, not properties it certifies. The test needs the Q-table, so it is a tool for simulations, not a screen for bid data; Section~\ref{sec:phase1} reports it and Section~\ref{sec:discussion} states its limits.
