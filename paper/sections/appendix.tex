@@ -99,18 +99,18 @@ Punish, no recovery & 70 & 20.5 & 19.1 & 41.8 & 43.8 & 66.2 \\
 
 \begin{table}[htbp]
 \centering
-\caption{Most common last-round bid profiles on frozen play, 5M rounds, 100 seeds per run. Notes: bids rounded to the nearest euro; count is the number of seeds ending at that profile; permutations of an asymmetric profile are pooled.}
+\caption{Most common last-round bid profiles on frozen play, 5M rounds, 100 seeds per run. Notes: bids rounded to the nearest euro; count is the number of seeds ending at that profile, taken from the \texttt{last\_profile} field of the stored results; permutations of an asymmetric profile are pooled. The $\gamma = 0$ seeds sit on cycles of period up to 25, so for that run a last-round profile is one snapshot of a cycle and the counts shift by about three seeds per cell with the round sampled; the pay-as-bid runs converge to fixed points and do not.}
 \label{tab:app-profiles}
 \begin{tabular}{llr}
 \toprule
 Run & Profile & Seeds \\
 \midrule
-$\gamma = 0$, memory 1 & (10, 16, 16) & 15 \\
- & (10, 36, 36) & 10 \\
+$\gamma = 0$, memory 1 & (10, 16, 16) & 13 \\
  & (10, 42, 42) & 10 \\
- & (10, 29, 29) & 9 \\
- & (16, 42, 42) & 7 \\
- & (10, 55, 55) & 7 \\
+ & (10, 36, 36) & 9 \\
+ & (16, 42, 42) & 8 \\
+ & (10, 29, 29) & 8 \\
+ & (10, 23, 23) & 5 \\
 \midrule
 Pay-as-bid, memory 0 & (68, 68, 68) & 16 \\
  & (94, 94, 94) & 12 \\
@@ -125,4 +125,4 @@ Pay-as-bid, memory 1 & (55, 55, 55) & 13 \\
 \end{tabular}
 \end{table}
 
-\paragraph{Block-to-block moves in the occupation runs.} In the constant-$\varepsilon$ runs of Table~\ref{tab:occupation} the price is averaged in blocks, and a move is counted when the block mean changes by more than \eur{5}. The two learners move differently. The memory-0 learner makes large jumps: about \eur{28} in either direction at $\varepsilon \le 0.03$ and about \eur{22} at $\varepsilon = 0.1$, which is the signature of the walk down the grid and the single jump back up described in Section~\ref{sec:discussion}. The memory-1 learner makes small ones: about \eur{10} at $\varepsilon \le 0.003$, about \eur{8} at $\varepsilon = 0.01$, about \eur{4}--\eur{5} at $\varepsilon = 0.03$, and none at all at $\varepsilon = 0.1$, where its time-average $\Dl$ is 0.336 and no block exceeds $\eur{55}$.
+\paragraph{Block-to-block moves in the occupation runs.} In the constant-$\varepsilon$ runs of Table~\ref{tab:occupation} the price is averaged in blocks, and a move is counted when the block mean changes by more than \eur{5}. The two learners move differently. The memory-0 learner makes large jumps: about \eur{28} in either direction at $\varepsilon \le 0.03$ and about \eur{22} at $\varepsilon = 0.1$, consistent with a process that moves between distant rungs rather than drifting. These means are equal in the two directions and so say nothing about the direction asymmetry of the verbal argument in Section~\ref{sec:discussion}, which these runs do not test. The memory-1 learner makes small ones: about \eur{10} at $\varepsilon \le 0.003$, about \eur{8} at $\varepsilon = 0.01$, about \eur{4}--\eur{5} at $\varepsilon = 0.03$, and none at all at $\varepsilon = 0.1$, where its time-average $\Dl$ is 0.336 and no block exceeds $\eur{55}$.

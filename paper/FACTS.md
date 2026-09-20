@@ -13,8 +13,14 @@ verifiers check against here. Nothing else counts.
   (uniform price). Ties at the margin split pro rata to capacity. With 3×60 vs 100, the clearing
   price is always the SECOND-LOWEST bid: the lowest bidder sells 60 MW, the second-lowest 40 MW,
   the highest 0 (unless tied).
-- Consequence: a lone undercut is paid the rivals' price for 60 MW and does NOT move the price.
-  The price falls only when a second firm follows.
+- Consequence, stated precisely [verified with collusim.Market.clear]: from a profile whose TWO
+  LOWEST BIDS ARE TIED (which includes every symmetric profile), a lone undercut is paid the rivals'
+  price for 60 MW and does NOT move the price — e.g. (100,100,100) → (93.57,100,100) both clear at
+  100, the undercutter's profit going 3,000 → 5,400. From such a profile the price falls only when a
+  second firm follows. When the two lowest bids DIFFER, an undercut landing between them DOES move
+  the price: at the memory-0 rest point (10,100,100) a high bidder shaving one rung gives
+  (10,93.57,100), which clears at 93.57 with the undercutter selling 40 MW for 3,343. Never write
+  the unqualified form "a lone undercut never moves the price".
 - Benchmarks: competitive p = €10 (bid at cost; Δ = 0), collusive p = €100 (cap; Δ = 1).
   Collusion index Δ = (mean clearing price − 10) / 90.
 - Pay-as-bid variant (collusim.Market(pay_as_bid=True)): same dispatch, each dispatched firm paid
@@ -95,8 +101,13 @@ verifiers check against here. Nothing else counts.
   Example 2-cycle: round t bids (100,94,100) → price 100; t+1 bids (36,42,36) → price 36; repeat.
 - Baseline 1M (not converged): periods spread from 1 to 56; only 23/100 ≤ 4; the 10 two-cycles have
   high €76.9 / low €34.4.
-- γ=0 long: long irregular cycles, 20/100 with period ≤ 4, periods up to 25; most common last-round
-  profiles (10,16,16) ×15, (10,36,36) ×10, (10,42,42) ×10, (10,29,29) ×9, (16,42,42) ×7, (10,55,55) ×7.
+- γ=0 long: long irregular cycles, 20/100 with period ≤ 4, periods up to 25. Most common frozen
+  profiles **from the stored `last_profile` field** (the convention used everywhere in the paper):
+  (10,16,16) ×13, (10,42,42) ×10, (10,36,36) ×9, (16,42,42) ×8, (10,29,29) ×8, (10,23,23) ×5.
+  CAVEAT, must be stated wherever these are quoted: because these seeds sit on cycles of period up
+  to 25, a last-round profile is one snapshot of a cycle, and the counts shift by ~3 seeds per cell
+  with the round sampled (a 300-round greedy replay gives 15/10/10/9/7/7). The memory-0 counts are
+  fixed points and identical under both conventions; the full learner's top three are too.
 - Memory-0 long: 100/100 seeds at a FIXED POINT (period 1), and 100/100 of them exactly of the form
   (low, high, high): one firm low, two firms tied high. Low bidder at €10 (36 seeds), 16.43 (31),
   22.86 (18), 29.29 (11), 42.14 (2), 67.86 (2). High pair at €100 (43), 93.57 (36), 87.14 (20),
@@ -130,6 +141,13 @@ rivals do not move. "no-op" = the deviator was already bidding €10.
   Forgive subset (21 seeds): rival drop 10.9 then 0.2; price €49.9 in rounds 1–12 and €63.2 in 13–24
   vs counterfactual €65.4 (pre-deviation price €65.4).
   No-recovery subset (70 seeds): rival drop 20.5 then 19.1; price €41.8 (1–12) and €43.8 (13–24) vs €66.2.
+- The one-round deviation is profitable ONLY at profiles whose two lowest bids are tied, i.e. the
+  symmetric ones the full learner converges to (3,000 → 5,400). At a memory-0 rest point
+  (low, high, high) a high bidder forced to €10 becomes the lowest bidder, the price falls to the
+  LOW BIDDER's bid, and the deviator earns less than before: 0 when the low bidder is at €10 (36 of
+  100 seeds), else 386 at 16.43, 772 at 22.86, 1,157 at 29.29 — against 1,800 before [verified].
+  The M3 verdict is read from the rivals' bids, so this does not affect it. Original wording, true
+  only for the tied case and kept for reference:
 - The one-round deviation is PROFITABLE: the deviator sells 60 MW at the rivals' price; the clearing
   price does not move in the deviation round because it is the second-lowest bid.
 - Memory-0: nothing to react to (one state), 100% no reaction: the test discriminates.
@@ -225,7 +243,8 @@ Q_i(s, a_i), i.e. one fresh update would already flip the decision.
   The walk down is a chain of events each needing a specific exploratory draw at a specific time;
   the jump up is one event. The cycle lives near the top; the less noise, the more so; freezing
   samples that distribution. Analogy: stochastic stability (Kandori–Mailath–Rob; Young): the
-  states selected as noise vanishes are those with the largest basins under the noisy dynamic.
+  states selected as noise vanishes are those that take the most rare draws to leave and the fewest
+  to reach. Use that operational phrasing everywhere; do not write "basins under the noisy dynamic".
   Not the folk theorem: no threat, no memory.
 - Memory-1: also a small-noise limit of its occupation measure, but ~30× more fragile; a
   coordinated cycle that single random draws break. Its deviation estimates are ALSO stale
@@ -239,6 +258,52 @@ Q_i(s, a_i), i.e. one fresh update would already flip the decision.
   standard evidence does not support calling it tacit collusion; part of what the memory-1 learner
   does is learned continuation; the memory-0 price is a property of ε-greedy learning on a
   discrete grid in a non-pivotal uniform-price auction.
+
+## 8b. What was fixed in advance, and what was not [git history: SPEC.md and indicators.py at commit 553760c]
+This is the honest account; the paper must not claim more.
+- **In SPEC.md, written before any code**: the market, the learners, every hyperparameter (α, γ, β,
+  grid, horizons), the four measurements, and QUALITATIVE acceptance rules. M2: "a meaningful
+  fraction of seeds converge to Δ > 0.5" (no numeric threshold anywhere). M3: "prices drop below the
+  pre-deviation level for several rounds, then recover", judged from a plot of 20 rounds, deviator
+  agent 0. M4: "Δ collapses toward 0 in both" (no numeric threshold). M5: "at least one agent's best
+  deviation is strictly profitable yet unplayed".
+- **Fixed at implementation, before any reported run, but not in SPEC.md**: the M4 collapse rule
+  (Δ < 0.25 AND < half the full learner's Δ) and the whole M3 operationalisation — judging on the
+  RIVALS' bids against a no-deviation counterfactual, two 12-round windows, half-rung (€3.21)
+  threshold. Both are present in `indicators.py` at the first commit (553760c).
+- **Chosen with knowledge of the runs**: the 12-round window length is justified by the converged
+  cycle lengths (12 divides 1–4 and 6), which were only known after the first runs. The rival-bid
+  criterion replaced a price-based one after the price-based version produced false positives on
+  converged cycles (a converged cycle's own price dip was read as punishment). Every M3 verdict
+  reported here was computed with the final criterion.
+- **Phase 1 is not in SPEC.md at all.** Each experiment's prediction was written into the
+  `phase1.py` docstring before that experiment ran, but the five experiments were designed
+  sequentially, each in response to the previous result.
+- **Post-hoc addition**: the ε = 1e−4 / 30M-round occupation point was added after the memory-1
+  curve was seen still rising at ε = 1e−3. It is the only cell chosen after seeing the quantity it
+  reports.
+- Seeds: the 50-seed pilot used `range(50)`, the reported runs `range(100)`; the first 50 seeds are
+  the same seeds.
+
+## 8c. Mechanical facts [computed from collusim and results/*.json]
+- Trajectory figures: mean clearing price per block of `BLOCK = 1000` rounds. Convergence window
+  `CONV_ROUNDS = 100000`. `t_conv` = first round at which no agent's greedy action had changed for
+  100,000 rounds, else −1.
+- Baseline 1M Δ distribution, exactly: 12 seeds strictly above 0.5, **2 seeds exactly at Δ = 0.500**
+  (frozen mean price €55.00), so 14 seeds in [0.5, 0.7). The "12%" and the "14 in [0.5,0.7)" figures
+  are both correct and refer to different things.
+- Baseline 1M mean trajectory: starts at €54.9, first block at or below €40 at 120k rounds, minimum
+  €37.5 at 196k rounds, ends at €43.9.
+- Memory-0 after ε re-injection at ε₀ = 0.5: **100 of 100 seeds** end again at a (low, high, high)
+  profile (with the roles reassigned in 70% of seeds).
+- M3 verdict COUNTS behind the shares [indicators_<config>.json per_seed, deviator = firm 1]:
+  baseline 1M, 12 collusive seeds: forgive 4, no recovery 6, no reaction 2, no-op 1, forgive for at
+  least one deviator 8. Long 5M, 100 seeds: forgive 21, no recovery 70, no reaction 9, no-op 2,
+  forgive for at least one deviator 47. γ=0 1M, 5 collusive: 0 / 1 / 4, no-op 2. γ=0 5M, 4
+  collusive: 1 / 1 / 2, no-op 1. Memory-0 1M and 5M, 100 each: 0 / 0 / 100, no-op 10 and 11.
+- Representative seed of each punishment figure = the seed with the highest Δ in that configuration
+  [indicators_<config>.json "representative_seed"]: long 5M → seed 19; baseline 1M → seed 1;
+  γ=0 → 36; memory-0 → 0.
 
 ## 9. Limits (must appear)
 - Simulation only; one stylised single-node market; no network/congestion, no multi-segment bid
